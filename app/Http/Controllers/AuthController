@@ -1,0 +1,136 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Http\Request;
+use App\Models\User;
+use App\Models\GestionSaludCompleta;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
+
+class AuthController extends Controller
+{
+    // GET /login
+    public function showLoginForm()
+    {
+        return view('auth.login');
+    }
+
+    // POST /login
+    public function login(Request $request)
+    {
+        $request->validate([
+            'rut'      => ['required','string','max:12','regex:/^[0-9]+-[0-9Kk]$/'],
+            'password' => ['required','string'],
+        ]);
+
+        $rut = strtoupper(trim($request->rut));
+        $passwordIngresada = $request->password;
+
+        // 1) Verificar que el paciente exista en gestiones_salud_completa
+        $existePaciente = GestionSaludCompleta::where('tipo_documento', 'RUT')
+            ->where('numero_documento', $rut)
+            ->exists();
+
+        if (!$existePaciente) {
+            return back()->withErrors(['rut' => 'Paciente no encontrado.'])->onlyInput('rut');
+        }
+
+        // 2) Buscar o crear usuario en users (rut/name/email/password/flags)
+        $user = User::where('rut', $rut)->first();
+
+        if (!$user) {
+            // Intentar tomar nombre y email desde el primer registro de gestiones
+            $registro = GestionSaludCompleta::where('tipo_documento', 'RUT')
+                ->where('numero_documento', $rut)
+                ->orderBy('created_at', 'asc')
+                ->first();
+
+            $nombre = $registro?->nombre_paciente ?? 'Paciente '.$rut;
+            $email  = $registro?->email;
+
+            $rutDigits = preg_replace('/[^0-9]/', '', $rut);
+            $defaultPlain = substr($rutDigits, 0, 5);
+
+            $user = User::create([
+                'rut'                   => $rut,
+                'name'                  => $nombre,
+                'email'                 => $email,
+                'password'              => Hash::make($defaultPlain),
+                'force_password_change' => true,
+                'is_blocked'            => false,
+                'failed_login_attempts' => 0,
+                'is_validated'          => false,
+                'theme'                 => 'blue',
+            ]);
+        }
+
+        // 3) Bloqueado?
+        if ($user->is_blocked) {
+            return back()->withErrors([
+                'rut' => 'Tu cuenta está bloqueada por múltiples intentos fallidos.',
+            ])->onlyInput('rut');
+        }
+
+        // 4) Intento de autenticación
+        if (!Auth::attempt(['rut' => $rut, 'password' => $passwordIngresada])) {
+            $intentos = ($user->failed_login_attempts ?? 0) + 1;
+
+            if ($intentos >= 3) {
+                $user->update([
+                    'is_blocked'            => true,
+                    'failed_login_attempts' => $intentos,
+                ]);
+
+                return back()->withErrors([
+                    'password' => 'Cuenta bloqueada por intentos fallidos. Contacta soporte.',
+                ])->onlyInput('rut');
+            }
+
+            $user->update(['failed_login_attempts' => $intentos]);
+
+            $restantes = 3 - $intentos;
+            return back()->withErrors([
+                'password' => "Contraseña incorrecta. Te quedan {$restantes} intento(s).",
+            ])->onlyInput('rut');
+        }
+
+        // 5) Éxito: reset intentos y registrar IP
+        $user->update([
+            'failed_login_attempts' => 0,
+            'is_blocked'            => false,
+        ]);
+
+        // 6) Forzar cambio de contraseña si corresponde
+        $rutDigits = preg_replace('/[^0-9]/', '', $rut);
+        $defaultPlain = substr($rutDigits, 0, 5);
+
+        if (Hash::check($defaultPlain, $user->password) || $user->force_password_change) {
+            session(['forcePasswordChange' => true]);
+        }
+
+        Log::debug('[LOGIN] forcePasswordChange', ['value' => session('forcePasswordChange')]);
+
+        // 7) Redirección según validación
+        if (!$user->is_validated) {
+            return redirect()->route('validacion')->with('success', 'Bienvenido. Completa la validación.');
+        }
+
+        return redirect()->route('ver-resultados')->with('success', 'Inicio de sesión exitoso.');
+    }
+
+    // POST /logout
+    public function logout(Request $request)
+    {
+        if (Auth::check()) {
+            Auth::logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+
+            return redirect()->route('login')->with('success', 'Sesión cerrada correctamente.');
+        }
+
+        return back()->with('warning', 'Aún no has iniciado sesión.');
+    }
+}

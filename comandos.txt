@@ -1,0 +1,9 @@
+php artisan make:migration create_nombre_de_la_tabla_table
+php artisan db:seed
+php artisan db:seed --class=NombreDeTuSeeder
+php artisan config:clear
+php artisan cache:clear
+php artisan route:clear
+php artisan view:clear
+
+php artisan optimize

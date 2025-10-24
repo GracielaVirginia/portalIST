@@ -1,0 +1,10 @@
+@import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
+/* tu css existente… */
+@layer utilities {
+    .card {
+        @apply rounded-xl shadow-lg p-4 bg-white dark:bg-gray-800;
+    }
+
+    /* ... */
+}
