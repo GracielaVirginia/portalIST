@@ -28,13 +28,14 @@ class User extends Authenticatable
         'email',
         'password',
         'lugar_cita',
-        'force_password_change',
+        'password_needs_change',
         'is_blocked',
         'failed_login_attempts',
         'blocked_at',
         'failed_validated_attempts',
         'is_validated',
         'theme',
+        'added',
         'email_verified_at',
     ];
 

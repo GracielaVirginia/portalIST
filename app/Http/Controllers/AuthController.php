@@ -59,7 +59,7 @@ class AuthController extends Controller
                 'email'                 => $email,
                 'password'              => Hash::make($defaultPlain),
                 'lugar_cita'            => $lugar_cita,
-                'force_password_change' => true,
+                'password_needs_change' => true,
                 'is_blocked'            => false,
                 'failed_login_attempts' => 0,
                 'is_validated'          => false,
@@ -130,7 +130,7 @@ class AuthController extends Controller
             $request->session()->invalidate();
             $request->session()->regenerateToken();
 
-            return redirect()->route('login')->with('success', 'Sesión cerrada correctamente.');
+            return redirect()->route('welcome')->with('success', 'Sesión cerrada correctamente.');
         }
 
         return back()->with('warning', 'Aún no has iniciado sesión.');

@@ -45,12 +45,13 @@
     <div class="mt-10 flex flex-col sm:flex-row justify-center gap-4">
       <a href="{{ route('login') }}"
          class="px-6 py-3 rounded-lg font-semibold text-white bg-purple-900 hover:bg-purple-800 shadow-md transition">
-        Volver al inicio de sesión
+        Volver al login del Paciente
       </a>
-      <a href="{{ url('/') }}"
-         class="px-6 py-3 rounded-lg font-semibold border-2 border-purple-900 text-purple-900 hover:bg-purple-900 hover:text-white dark:border-purple-400 dark:text-purple-300 dark:hover:bg-purple-500 dark:hover:text-white transition">
-        Ir al inicio
+            <a href="{{ route('login-admin') }}"
+         class="px-6 py-3 rounded-lg font-semibold text-white bg-purple-900 hover:bg-purple-800 shadow-md transition">
+        Volver al login del Administrador
       </a>
+
     </div>
   </main>
 

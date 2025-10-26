@@ -17,7 +17,7 @@ return new class extends Migration
             $table->text('bajada')->nullable();      // subtítulo o resumen
             $table->longText('contenido')->nullable(); // cuerpo completo
             $table->string('imagen')->nullable();    // URL o ruta a la imagen
-            $table->boolean('destacada')->default(false);
+            $table->boolean('destacada')->default(false)->index();
             $table->timestamps();
         });
     }

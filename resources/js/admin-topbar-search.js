@@ -49,6 +49,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
+            // dentro de data.forEach(u => { ... })
             data.forEach(u => {
                 const estado = u.portal_registrado ? 'Registrado en el portal' : 'No registrado en el portal';
                 const estadoClass = u.portal_registrado
@@ -58,23 +59,27 @@ document.addEventListener('DOMContentLoaded', () => {
                 const email = u.email ?? '—';
 
                 const li = document.createElement('li');
-                li.innerHTML = `
-    <div class="px-4 py-2 hover:bg-purple-100 dark:hover:bg-gray-700 flex justify-between items-center cursor-pointer">
-      <div>
-        <div class="font-semibold text-purple-800 dark:text-purple-200">${u.nombre ?? ''}</div>
-        <div class="text-sm text-gray-600 dark:text-gray-400">${u.rut ?? ''}</div>
-      </div>
+                // 👇 guardamos el RUT en data-*
+                li.dataset.patientRut = u.rut || '';
+                li.className = 'cursor-pointer'; // por si acaso
 
-      <div class="flex items-center gap-2">
-        <span class="text-xs bg-purple-200 dark:bg-purple-900 text-purple-900 dark:text-purple-200 px-2 py-1 rounded-full">
-          ${email}
-        </span>
-        <span class="text-[11px] px-2 py-1 rounded-full ${estadoClass}">
-          ${estado}
-        </span>
+                li.innerHTML = `
+      <div class="px-4 py-2 hover:bg-purple-100 dark:hover:bg-gray-700 flex justify-between items-center">
+        <div>
+          <div class="font-semibold text-purple-800 dark:text-purple-200">${u.nombre ?? ''}</div>
+          <div class="text-sm text-gray-600 dark:text-gray-400">${u.rut ?? ''}</div>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <span class="text-xs bg-purple-200 dark:bg-purple-900 text-purple-900 dark:text-purple-200 px-2 py-1 rounded-full">
+            ${email}
+          </span>
+          <span class="text-[11px] px-2 py-1 rounded-full ${estadoClass}">
+            ${estado}
+          </span>
+        </div>
       </div>
-    </div>
-  `;
+    `;
                 resultsUl.appendChild(li);
             });
 

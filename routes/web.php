@@ -15,6 +15,17 @@ use App\Http\Controllers\ClearSessionController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Admin\AdminAuthController;
 use App\Http\Controllers\Admin\AdminDashboardController;
+use App\Http\Controllers\Admin\AdminPatientsController;
+use App\Http\Controllers\ExamenNombreController;
+use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Admin\NewsController;
+use App\Http\Controllers\Admin\AdminController;
+use App\Http\Controllers\Admin\ValidationController;
+use App\Http\Controllers\Security\UserPasswordController;
+use App\Http\Controllers\Admin\NoticiasController as AdminNoticiasController;
+use App\Http\Controllers\Portal\NoticiasController as PortalNoticiasController;
+
+
 /*
 |--------------------------------------------------------------------------
 | Rutas Públicas (visitantes y pacientes no autenticados)
@@ -94,12 +105,17 @@ Route::middleware('auth')->group(function () {
     Route::get('/portal/recetas', [RecetasController::class, 'index'])->name('portal.recetas.index');
     // Ej: /portal/recetas
     Route::post('/portal/controles/store', [ControlesController::class, 'store'])->name('portal.controles.store');
+
+Route::post('/password/update', [UserPasswordController::class, 'update'])->name('password.update');
 //rutas admin
 
 
 
-Route::get('/portal/noticias', [NoticiasController::class, 'index'])->name('portal.noticias.index');
-    Route::get('/portal/noticias/{id}', [NoticiasController::class, 'show'])->name('portal.noticias.show');
+
+// PORTAL (público/pacientes)
+Route::get('/portal/noticias', [PortalNoticiasController::class, 'index'])->name('portal.noticias.index');
+Route::get('/portal/noticias/{id}', [PortalNoticiasController::class, 'show'])->name('portal.noticias.show');
+
 
 });
 
@@ -134,12 +150,26 @@ Route::middleware('admin.auth')->group(function () {
 Route::get('/dashboard-admin', [AdminDashboardController::class, 'index'])->name('admin.dashboard');
 Route::post('/logout-admin', [AdminAuthController::class, 'logout'])->name('admin.logout');
 
-// ========== Enlaces del sidebar (temporales) ==========
-    Route::view('/admin/users', 'admin.placeholders.users')->name('admin.users.index');
-    Route::view('/admin/news', 'admin.placeholders.news')->name('admin.news.index');
-    Route::view('/admin/admins', 'admin.placeholders.admins')->name('admin.admins.index');
-    Route::view('/admin/validations', 'admin.placeholders.validations')->name('admin.validations.index');
-
+Route::get('/users', [UserController::class, 'index'])->name('admin.users.index');
+// Registrados
+Route::get('/users/registered', [UserController::class, 'registered'])->name('admin.users.registered');
+Route::get('/users/registered/data', [UserController::class, 'registeredData'])->name('admin.users.registered.data');
+Route::get('/admins', [AdminController::class, 'index'])->name('admin.admins.index');
+Route::get('/validations', [ValidationController::class, 'index'])->name('admin.validations.index');
+//no registrados
+Route::get('/users/unregistered', [UserController::class, 'unregistered'])->name('admin.users.unregistered');
+Route::get('/users/unregistered/data', [UserController::class, 'unregisteredData'])->name('admin.users.unregistered.data');
+//crear paciente en el portal
+Route::get('/users/create', [UserController::class, 'create'])->name('admin.users.create');
+//ENVIAR EL EMAIL
+Route::post('/admin/gestiones/email-route', [AdminGestionesController::class, 'markEmailRoute'])
+    ->name('admin.gestiones.emailRoute');
+//editar usuario de la tabla gestiones
+Route::get('/admin/users/edit/{rut}', [UserController::class, 'editUnregistered'])
+    ->name('admin.users.unregistered.edit');
+// Guardar cambios (editar)
+Route::put('/admin/users/edit/{rut}', [UserController::class, 'updateUnregistered'])
+    ->name('admin.users.unregistered.update');
 
 // 🔎 Buscador AJAX (solo pacientes desde tabla gestiones)
 Route::get('/admin/users/search', [AdminDashboardController::class, 'searchUsers'])->name('admin.users.search');
@@ -148,5 +178,27 @@ Route::get('/admin/users/search', [AdminDashboardController::class, 'searchUsers
 Route::delete('/admin/users/delete', [AdminDashboardController::class, 'deleteUserByRut'])->name('admin.users.delete');
 Route::get('/dashboard/stats', [AdminDashboardController::class, 'stats'])->name('dashboard.stats');
 Route::get('/dashboard/stats/by-sede', [AdminDashboardController::class, 'statsBySede'])->name('dashboard.stats.bySede');
+Route::get('/admin/pacientes/lookup', [AdminPatientsController::class, 'lookup'])->name('admin.patients.lookup');
+Route::post('/admin/users/{user}/unblock', [AdminPatientsController::class, 'unblock'])->name('admin.users.unblock');
+Route::delete('/admin/users/{user}', [AdminPatientsController::class, 'destroy'])->name('admin.users.destroy');
 
+//para crear examenes
+Route::get('/examen_nombre', [ExamenNombreController::class, 'index'])->name('admin.examen_nombre.index');
+Route::get('/examen_nombre/create', [ExamenNombreController::class, 'create'])->name('admin.examen_nombre.create');
+Route::post('/examen_nombre', [ExamenNombreController::class, 'store'])->name('admin.examen_nombre.store');
+Route::get('/examen_nombre/{examenNombre}', [ExamenNombreController::class, 'show'])->name('admin.examen_nombre.show');
+Route::get('/examen_nombre/{examenNombre}/edit', [ExamenNombreController::class, 'edit'])->name('admin.examen_nombre.edit');
+Route::put('/examen_nombre/{examenNombre}', [ExamenNombreController::class, 'update'])->name('admin.examen_nombre.update');
+Route::delete('/examen_nombre/{examenNombre}', [ExamenNombreController::class, 'destroy'])->name('admin.examen_nombre.destroy');
+// ADMIN (CRUD + toggle “poner en home”)
+Route::get(   '/admin/noticias',                 [AdminNoticiasController::class, 'index'])->name('admin.noticias.index');
+Route::get(   '/admin/noticias/create',          [AdminNoticiasController::class, 'create'])->name('admin.noticias.create');
+Route::post(  '/admin/noticias',                 [AdminNoticiasController::class, 'store'])->name('admin.noticias.store');
+Route::get(   '/admin/noticias/{noticia}/edit',  [AdminNoticiasController::class, 'edit'])->name('admin.noticias.edit');
+Route::put(   '/admin/noticias/{noticia}',       [AdminNoticiasController::class, 'update'])->name('admin.noticias.update');
+Route::delete('/admin/noticias/{noticia}',       [AdminNoticiasController::class, 'destroy'])->name('admin.noticias.destroy');
+
+// Toggle “Poner en home” (marca esta noticia como destacada y desmarca el resto)
+Route::patch('/admin/noticias/{noticia}/toggle-home', [AdminNoticiasController::class, 'toggleDestacada'])
+    ->name('admin.noticias.toggle-home');
 });

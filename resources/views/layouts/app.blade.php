@@ -32,6 +32,25 @@
   <div class="min-h-screen flex flex-col">
 
     <main id="content" class="flex-grow">
+      {{-- ===== Flash messages (autocierra en 3s) ===== --}}
+@foreach (['success' => ['green','✅'], 'error' => ['red','❌'], 'warning' => ['yellow','⚠️'], 'info' => ['sky','ℹ️']] as $key => [$color, $icon])
+  @if (session($key))
+    <div class="max-w-4xl mx-auto mt-4 mb-6 px-4"
+         x-data="{ show: true }"
+         x-init="setTimeout(() => show = false, 3000)">
+      <div x-show="show"
+           x-transition.opacity.duration.300ms
+           role="alert"
+           class="rounded-xl border border-{{ $color }}-300 dark:border-{{ $color }}-700
+                  bg-{{ $color }}-50 dark:bg-{{ $color }}-900/30
+                  text-{{ $color }}-800 dark:text-{{ $color }}-200
+                  px-4 py-3 font-semibold shadow-sm">
+        {{ $icon }} {{ session($key) }}
+      </div>
+    </div>
+  @endif
+@endforeach
+
       @yield('content')
     </main>
 

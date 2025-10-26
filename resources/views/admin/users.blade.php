@@ -1,4 +1,4 @@
-@extends('layouts.admin')
+@extends('layouts.app')
 
 @section('title', 'Gestión de Usuarios')
 @section('page-title', 'Gestión de Usuarios')

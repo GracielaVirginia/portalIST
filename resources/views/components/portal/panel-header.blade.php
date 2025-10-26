@@ -166,22 +166,23 @@
         <hr class="border-gray-200 dark:border-gray-700">
 
         {{-- Form eliminar cuenta --}}
-        <form method="POST" action="{{ route('profile.destroy') }}"
-              onsubmit="return confirm('¿Seguro que deseas eliminar tu cuenta? Esta acción no se puede deshacer.');">
-          @csrf
-          @method('DELETE')
+{{-- Form eliminar cuenta (con SweetAlert) --}}
+<form method="POST" action="{{ route('profile.destroy') }}" class="form-eliminar-cuenta">
+  @csrf
+  @method('DELETE')
 
-          <label class="block text-sm text-gray-700 dark:text-gray-300">Confirma tu contraseña para eliminar la cuenta</label>
-          <input type="password" name="password" required
-                 class="mt-1 w-full rounded-md border-gray-300 dark:bg-gray-800 dark:border-gray-700">
+  <label class="block text-sm text-gray-700 dark:text-gray-300">Confirma tu contraseña para eliminar la cuenta</label>
+  <input type="password" name="password" required
+         class="mt-1 w-full rounded-md border-gray-300 dark:bg-gray-800 dark:border-gray-700"
+         placeholder="Contraseña actual">
 
-          <div class="flex justify-end mt-3">
-            <button type="submit"
-                    class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700">
-              Eliminar cuenta
-            </button>
-          </div>
-        </form>
+  <div class="flex justify-end mt-3">
+    <button type="submit"
+            class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700">
+      Eliminar cuenta
+    </button>
+  </div>
+</form>
       </div>
     </div>
   </div>

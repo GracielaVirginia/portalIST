@@ -3,33 +3,29 @@
 namespace App\Http\Controllers\Portal;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use App\Models\Noticia;
 
 class NoticiasController extends Controller
 {
     public function index()
     {
+        // IMPORTANTE: devolvemos MODELOS, no arrays
         $noticias = Noticia::orderByDesc('created_at')->get();
-
-        // genera url para cada una
-        $noticias = $noticias->map(function ($n) {
-            return [
-                'id'      => $n->id,
-                'titulo'  => $n->titulo,
-                'bajada'  => $n->bajada,
-                'imagen'  => $n->imagen,
-                'url'     => route('portal.noticias.show', $n->id),
-            ];
-        });
-
-        return view('portal.noticias.index', ['noticias' => $noticias]);
+        return view('portal.noticias.index', compact('noticias'));
     }
 
     public function show($id)
     {
-        $noticia = Noticia::findOrFail($id);
+        $n = Noticia::findOrFail($id);
 
-        return view('portal.noticias.show', ['noticia' => $noticia]);
+        // Tu vista show usa array; si prefieres, puedes pasar el modelo.
+        return view('portal.noticias.show', ['noticia' => [
+            'id'     => $n->id,
+            'titulo' => $n->titulo,
+            'bajada' => $n->bajada,
+            'imagen' => $n->imagen_url, // accessor en el modelo
+        ]]);
+        // Alternativa si la vista espera modelo:
+        // return view('portal.noticias.show', compact('n'));
     }
 }

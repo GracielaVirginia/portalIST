@@ -107,6 +107,6 @@ public function loginAttemp(Request $request)
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect()->route('admin.login.form')->with('ok', 'Sesión cerrada.');
+        return redirect()->route('welcome')->with('ok', 'Sesión cerrada.');
     }
 }

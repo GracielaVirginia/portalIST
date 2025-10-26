@@ -19,6 +19,10 @@ public function run(): void
         GestionesSaludCompletaSeeder::class,
         AdminUsuarioSeeder::class,
         NoticiasTableSeeder::class,
+        OrigenSolicitudSeeder::class,
+        TipoGestionSeeder::class,
+        EspecialidadSeeder::class,
+        ExamenNombreSeeder::class,
         ]);
 }
 

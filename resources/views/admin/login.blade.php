@@ -2,7 +2,7 @@
 
 @section('content')
 
-<div class="min-h-screen w-full flex items-center justify-center bg-purple-100 dark:bg-gray-100">
+<div class="min-h-screen w-full flex items-center justify-center bg-purple-100 dark:bg-gray-500">
 
   <div class="relative w-full max-w-6xl mx-auto px-4">
     <div class="relative w-full aspect-[16/10] md:aspect-[4/3] lg:aspect-[3/2]">

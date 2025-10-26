@@ -17,11 +17,15 @@
 
         {{-- Contenido principal --}}
         <div class="xl:col-span-2 bg-white/10 rounded-2xl p-4 mb-4 shadow">
+            @include('admin.partials.stats-chart')
+
         </div>
         <div class="bg-white/10 rounded-2xl p-4 shadow">
             <x-calendar id="calResultados" value="{{ now()->toDateString() }}" firstDay="1" />
-                            @include('admin.partials.stats-panel')
-@include('admin.partials.stats-chart') 
+            @include('admin.partials.stats-panel')
         </div>
+                <div class="xl:col-span-2 bg-white/10 rounded-2xl p-4 mb-4 shadow">
+        @include('admin.partials.patient-detail')
+                </div>
     </x-admin.layout>
 @endsection

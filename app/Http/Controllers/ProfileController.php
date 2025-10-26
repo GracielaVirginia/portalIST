@@ -26,27 +26,36 @@ class ProfileController extends Controller
      * Actualizar datos del perfil del usuario.
      * PATCH /profile  →  route('profile.update')
      */
-    public function update(Request $request)
-    {
-        $user = $request->user();
+public function update(Request $request)
+{
+    $user = $request->user();
 
-        $validated = $request->validate([
-            'name'  => ['required', 'string', 'max:255'],
-            'email' => ['required', 'email', 'max:255', 'unique:users,email,' . $user->id],
-            'password' => ['nullable', 'confirmed', Rules\Password::defaults()],
-        ]);
+    $validated = $request->validate([
+        'name'     => ['required', 'string', 'max:255'],
+        'email'    => ['required', 'email', 'max:255', 'unique:users,email,' . $user->id],
+        'password' => ['nullable', 'confirmed', Rules\Password::defaults()],
+    ]);
 
-        $user->name  = $validated['name'];
-        $user->email = $validated['email'];
+    $user->name  = $validated['name'];
+    $user->email = $validated['email'];
 
-        if (!empty($validated['password'])) {
-            $user->password = Hash::make($validated['password']);
-        }
-
-        $user->save();
-
-        return redirect()->route('profile.edit')->with('status', 'Perfil actualizado correctamente.');
+    if (!empty($validated['password'])) {
+        $user->password = Hash::make($validated['password']);
     }
+
+    $user->save();
+
+    // Si la petición es AJAX/JSON => responder JSON (sin redirigir)
+    if ($request->expectsJson()) {
+        return response()->json([
+            'ok'      => true,
+            'message' => 'Perfil actualizado correctamente.',
+        ]);
+    }
+
+    // Fallback para peticiones normales
+    return back()->with('success', 'Perfil actualizado correctamente.');
+}
 
     /**
      * Eliminar la cuenta del usuario autenticado.

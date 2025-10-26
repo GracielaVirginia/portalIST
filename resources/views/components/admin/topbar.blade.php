@@ -42,14 +42,7 @@
     </div>
     {{-- ================== /BUSCADOR ================== --}}
 
-    {{-- Toggle tema --}}
-    <button type="button" id="admin-theme-toggle"
-            class="ml-auto inline-flex items-center gap-2 rounded-lg px-3 py-2 text-xs
-                   bg-purple-900/40 hover:bg-purple-800/60 text-white
-                   border border-white/10 transition">
-      <span class="icon">🌙</span>
-      <span class="label hidden sm:inline">Modo Oscuro</span>
-    </button>
+
 
     {{-- Avatar + menú --}}
     <div class="relative">

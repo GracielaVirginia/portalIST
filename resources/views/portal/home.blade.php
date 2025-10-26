@@ -19,6 +19,9 @@
     x-data="{ modalResultados:false, modalSalud:false }"
     class="container mx-auto px-4 sm:px-6 lg:px-8 pt-4 pb-6 overflow-x-hidden"
   >
+@if (Auth::check() && Auth::user()->password_needs_change)
+    <x-security.force-password-modal />
+@endif
     {{-- Header paciente --}}
     <x-portal.panel-header :paciente="$paciente" onOrganizar="{{ route('portal.home') }}#organizar" />
 
@@ -122,5 +125,9 @@
       </div>
     </div>
     {{-- =============== /MODALES =============== --}}
+    {{-- ... tu contenido de portal.home ... --}}
+
+
   </div>
+
 @endsection

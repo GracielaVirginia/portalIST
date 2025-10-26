@@ -1,28 +1,28 @@
 @props([
-  // Totales para badges (llegan del controlador)
-  'stats' => [
-    'dashboard'      => 0,  // si quieres mostrar algo aquí (opcional)
-    'usuarios'       => 0,
-    'noticias'       => 0,
-    'administradores'=> 0,
-    'validaciones'   => 0,
-  ],
+    // Totales para badges (llegan del controlador)
+    'stats' => [
+        'dashboard' => 0, // si quieres mostrar algo aquí (opcional)
+        'usuarios' => 0,
+        'noticias' => 0,
+        'administradores' => 0,
+        'validaciones' => 0,
+    ],
 ])
 
 @php
-  $dash   = (int) ($stats['dashboard'] ?? 0);
-  $users  = (int) ($stats['usuarios'] ?? 0);
-  $news   = (int) ($stats['noticias'] ?? 0);
-  $admins = (int) ($stats['administradores'] ?? 0);
-  $valids = (int) ($stats['validaciones'] ?? 0);
+    $dash   = (int) ($stats['dashboard'] ?? 0);
+    $users  = (int) ($stats['usuarios'] ?? 0);
+    $news   = (int) ($stats['noticias'] ?? 0);
+    $admins = (int) ($stats['administradores'] ?? 0);
+    $valids = (int) ($stats['validaciones'] ?? 0);
 
-  $is = fn ($name) => request()->routeIs($name);
+    $is = fn($name) => request()->routeIs($name);
 
-  $linkBase  = "group cursor-pointer flex items-center justify-between rounded-lg px-3 py-2 text-xs sm:text-sm font-medium transition";
-  $linkText  = "text-purple-900 dark:text-purple-100";
-  $linkHover = "hover:bg-purple-900 dark:hover:bg-purple-800 hover:text-white";
-  $dotBase   = "h-2 w-2 rounded-full bg-purple-700 group-hover:bg-white";
-  $badgeBase = "rounded-lg bg-purple-900 text-white text-[11px] px-2 py-0.5 group-hover:ring-1 group-hover:ring-white/40";
+    $linkBase  = "group cursor-pointer flex items-center justify-between rounded-lg px-3 py-2 text-xs sm:text-sm font-medium transition";
+    $linkText  = "text-purple-900 dark:text-purple-100";
+    $linkHover = "hover:bg-purple-900 dark:hover:bg-purple-800 hover:text-white";
+    $dotBase   = "h-2 w-2 rounded-full bg-purple-700 group-hover:bg-white";
+    $badgeBase = "rounded-lg bg-purple-900 text-white text-[11px] px-2 py-0.5 group-hover:ring-1 group-hover:ring-white/40";
 @endphp
 
 <aside class="w-full lg:w-64 shrink-0">
@@ -36,12 +36,12 @@
         <span class="h-2 w-2 rounded-full bg-purple-900"></span>
         Panel de administración
       </span>
-      @if($dash > 0)
+      @if ($dash > 0)
         <span class="rounded-lg bg-purple-900 text-white text-[11px] px-2 py-0.5">{{ $dash }}</span>
       @endif
     </a>
 
-    {{-- ================= BLOQUE MORADO (como “Resultados” del portal) ================= --}}
+    {{-- ================= BLOQUE MORADO ================= --}}
     <div class="mt-2">
       {{-- Encabezado fijo del bloque --}}
       <div class="flex items-center justify-between rounded-xl px-3 py-2 text-sm font-semibold
@@ -52,49 +52,129 @@
           </svg>
           Gestión
         </span>
-        {{-- total combinado opcional: usuarios + noticias + admins + valids --}}
         @php $totalBlock = $users + $news + $admins + $valids; @endphp
         <span class="rounded-lg bg-purple-900 text-white text-xs px-2 py-0.5">{{ $totalBlock }}</span>
       </div>
 
-      {{-- Contenedor lila como en el portal --}}
+      {{-- Contenedor lila --}}
       <div class="ml-3 mt-1 rounded-xl bg-purple-100 dark:bg-purple-900/30 p-1.5 space-y-1">
 
-        {{-- Usuarios --}}
-        <a href="{{ route('admin.users.index') }}"
-           class="{{ $linkBase }} {{ $linkText }} {{ $linkHover }}">
-          <span class="inline-flex items-center gap-2">
-            <span class="{{ $dotBase }}"></span>
-            <span class="pl-1">👤 Usuarios</span>
-          </span>
-          @if($users > 0)
-            <span class="{{ $badgeBase }}">{{ $users }}</span>
-          @endif
-        </a>
+        {{-- Usuarios (con submenú) --}}
+        <div class="relative group/usuarios">
+          <a href="{{ route('admin.users.index') }}"
+             class="{{ $linkBase }} {{ $linkText }} {{ $linkHover }}">
+            <span class="inline-flex items-center gap-2">
+              <span class="{{ $dotBase }}"></span>
+              <span class="pl-1">👤 Usuarios</span>
+            </span>
+            @if ($users > 0)
+              <span class="{{ $badgeBase }}">{{ $users }}</span>
+            @endif
+          </a>
+
+          {{-- Popout derecha (sin gap + puente de hover) --}}
+          <div
+            class="absolute top-0 left-full z-10 hidden w-64 rounded-xl border border-gray-200 bg-white p-2 shadow-xl
+                   dark:border-gray-700 dark:bg-gray-900
+                   lg:group-hover/usuarios:block group-focus-within/usuarios:block
+                   opacity-0 scale-95 transition
+                   lg:group-hover/usuarios:opacity-100 lg:group-hover/usuarios:scale-100
+                   group-focus-within/usuarios:opacity-100 group-focus-within/usuarios:scale-100
+                   pointer-events-none lg:group-hover/usuarios:pointer-events-auto group-focus-within/usuarios:pointer-events-auto
+                   before:content-[''] before:absolute before:top-0 before:-left-2 before:w-2 before:h-full before:bg-transparent">
+            <div class="pl-2 space-y-1">
+              <a href="{{ route('admin.users.registered') }}"
+                 class="{{ $linkBase }} {{ $linkText }} hover:bg-purple-900 dark:hover:bg-purple-800 hover:text-white">
+                <span class="inline-flex items-center gap-2">
+                  <span class="h-2 w-2 rounded-full bg-purple-700 group-hover:bg-white"></span>
+                  Registrados en el portal
+                </span>
+              </a>
+              <a href="{{ route('admin.users.unregistered') }}"
+                 class="{{ $linkBase }} {{ $linkText }} hover:bg-purple-900 dark:hover:bg-purple-800 hover:text-white">
+                <span class="inline-flex items-center gap-2">
+                  <span class="h-2 w-2 rounded-full bg-purple-700 group-hover:bg-white"></span>
+                  No registrados en el portal
+                </span>
+              </a>
+            </div>
+          </div>
+        </div>
 
         {{-- Noticias --}}
-        <a href="{{ route('admin.news.index') }}"
+<a href="{{ route('admin.noticias.index') }}"
            class="{{ $linkBase }} {{ $linkText }} {{ $linkHover }}">
           <span class="inline-flex items-center gap-2">
             <span class="{{ $dotBase }}"></span>
             <span class="pl-1">📰 Noticias</span>
           </span>
-          @if($news > 0)
+          @if ($news > 0)
             <span class="{{ $badgeBase }}">{{ $news }}</span>
           @endif
         </a>
 
-        {{-- Administradores --}}
-        <a href="{{ route('admin.admins.index') }}"
-           class="{{ $linkBase }} {{ $linkText }} {{ $linkHover }}">
-          <span class="inline-flex items-center gap-2">
-            <span class="{{ $dotBase }}"></span>
-            <span class="pl-1">🧑‍💼 Administradores</span>
-          </span>
-          @if($admins > 0)
-            <span class="{{ $badgeBase }}">{{ $admins }}</span>
-          @endif
-        </a>
+        {{-- Administradores (con submenú) --}}
+        <div class="relative group/admins">
+          <a href=""
+             class="{{ $linkBase }} {{ $linkText }} {{ $linkHover }}">
+            <span class="inline-flex items-center gap-2">
+              <span class="{{ $dotBase }}"></span>
+              <span class="pl-1">🧑‍💼 Administradores</span>
+            </span>
+            @if ($admins > 0)
+              <span class="{{ $badgeBase }}">{{ $admins }}</span>
+            @endif
+          </a>
+
+          {{-- Popout derecha (sin gap + puente de hover) --}}
+          <div
+            class="absolute top-0 left-full z-10 hidden w-72 rounded-xl border border-gray-200 bg-white p-2 shadow-xl
+                   dark:border-gray-700 dark:bg-gray-900
+                   lg:group-hover/admins:block group-focus-within/admins:block
+                   opacity-0 scale-95 transition
+                   lg:group-hover/admins:opacity-100 lg:group-hover/admins:scale-100
+                   group-focus-within/admins:opacity-100 group-focus-within/admins:scale-100
+                   pointer-events-none lg:group-hover/admins:pointer-events-auto group-focus-within/admins:pointer-events-auto
+                   before:content-[''] before:absolute before:top-0 before:-left-2 before:w-2 before:h-full before:bg-transparent">
+            <div class="pl-2 space-y-1">
+              <a href=""
+                 class="{{ $linkBase }} {{ $linkText }} hover:bg-purple-900 dark:hover:bg-purple-800 hover:text-white">
+                <span class="inline-flex items-center gap-2">
+                  <span class="h-2 w-2 rounded-full bg-purple-700 group-hover:bg-white"></span>
+                  Crear administrador
+                </span>
+              </a>
+              {{-- <a href=""
+                 class="{{ $linkBase }} {{ $linkText }} hover:bg-purple-900 dark:hover:bg-purple-800 hover:text-white">
+                <span class="inline-flex items-center gap-2">
+                  <span class="h-2 w-2 rounded-full bg-purple-700 group-hover:bg-white"></span>
+                  Tipos de gestión
+                </span>
+              </a>
+              <a href=""
+                 class="{{ $linkBase }} {{ $linkText }} hover:bg-purple-900 dark:hover:bg-purple-800 hover:text-white">
+                <span class="inline-flex items-center gap-2">
+                  <span class="h-2 w-2 rounded-full bg-purple-700 group-hover:bg-white"></span>
+                  Especialidades
+                </span>
+              </a>
+              <a href=""
+                 class="{{ $linkBase }} {{ $linkText }} hover:bg-purple-900 dark:hover:bg-purple-800 hover:text-white">
+                <span class="inline-flex items-center gap-2">
+                  <span class="h-2 w-2 rounded-full bg-purple-700 group-hover:bg-white"></span>
+                  Tipos de exámenes
+                </span>
+              </a>
+              <a href=""
+                 class="{{ $linkBase }} {{ $linkText }} hover:bg-purple-900 dark:hover:bg-purple-800 hover:text-white">
+                <span class="inline-flex items-center gap-2">
+                  <span class="h-2 w-2 rounded-full bg-purple-700 group-hover:bg-white"></span>
+                  Lugar de la cita
+                </span>
+              </a> --}}
+            </div>
+          </div>
+        </div>
 
         {{-- Validaciones --}}
         <a href="{{ route('admin.validations.index') }}"
@@ -103,7 +183,7 @@
             <span class="{{ $dotBase }}"></span>
             <span class="pl-1">✅ Validaciones</span>
           </span>
-          @if($valids > 0)
+          @if ($valids > 0)
             <span class="{{ $badgeBase }}">{{ $valids }}</span>
           @endif
         </a>
@@ -112,7 +192,7 @@
     </div>
     {{-- ================= /BLOQUE MORADO ================= --}}
 
-    {{-- Cerrar sesión (fuera del bloque, como en tu portal) --}}
+    {{-- Cerrar sesión --}}
     <form method="POST" action="{{ route('admin.logout') }}" class="mt-3">
       @csrf
       <button type="submit"

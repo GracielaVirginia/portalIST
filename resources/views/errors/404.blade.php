@@ -43,15 +43,14 @@
     </p>
 
     <div class="mt-10 flex flex-col sm:flex-row justify-center gap-4">
-      <a href="{{ url('/') }}"
+      <a href="{{ route('clear.session') }}"
          class="px-6 py-3 rounded-lg font-semibold text-white bg-purple-900 hover:bg-purple-800 shadow-md transition">
-        Volver al inicio
+        Portal Pacientes
       </a>
-      <a href="{{ route('login') }}"
+      <a href="{{ url('/login-admin') }}"
          class="px-6 py-3 rounded-lg font-semibold border-2 border-purple-900 text-purple-900 hover:bg-purple-900 hover:text-white dark:border-purple-400 dark:text-purple-300 dark:hover:bg-purple-500 dark:hover:text-white transition">
-        Ir al inicio de sesión
-      </a>
-    </div>
+        Panel Administrativo
+      </a>    </div>
   </main>
 
 </body>

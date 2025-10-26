@@ -35,10 +35,10 @@
 
     {{-- Botón volver --}}
     <div class="mt-10">
-      <a href="{{ route('portal.noticias.index') }}"
+      <a href="{{ route('portal.home') }}"
          class="inline-flex items-center rounded-xl border border-purple-900/20 bg-purple-900 text-white
                 hover:bg-purple-800 px-5 py-2 font-semibold text-sm transition">
-        ← Volver a Noticias
+        ← Volver al Home
       </a>
     </div>
   </div>

@@ -4,23 +4,23 @@
      data-endpoint="{{ route('dashboard.stats.bySede') }}">
 
   <div class="flex items-start gap-6 flex-col md:flex-row">
-    {{-- Checkboxes de sedes --}}
     <div class="min-w-[220px] bg-white dark:bg-slate-800 rounded-lg p-3 shadow">
+      <div class="text-xs text-slate-500 mb-1">Todas las sedes</div>
       <h4 class="font-semibold mb-2 text-slate-700 dark:text-slate-100">Sedes</h4>
       <div id="chartSedes" class="flex flex-col gap-2 max-h-72 overflow-auto pr-2"></div>
     </div>
 
-    {{-- Canvas del gráfico --}}
     <div class="flex-1 bg-white dark:bg-slate-800 rounded-lg p-3 shadow w-full">
       <h4 class="font-semibold mb-2 text-slate-700 dark:text-slate-100">
         Estudios (verde) vs Usuarios (rojo)
       </h4>
-      <canvas id="chartSedesCanvas" height="320"></canvas>
+      {{-- Forzamos altura visible --}}
+      <div class="w-full" style="height: 360px;">
+        <canvas id="chartSedesCanvas" style="height: 100%; width: 100%;"></canvas>
+      </div>
     </div>
   </div>
 
-  <p id="chartMsg" class="text-sm text-slate-600 dark:text-slate-300 mt-2"></p>
-
-  {{-- estado compartido con el calendario --}}
+  <p id="chartMsg" class="text-sm text-white dark:text-slate-300 mt-2"></p>
   <input type="hidden" id="chartFecha" value="">
 </div>

@@ -1,0 +1,49 @@
+/* === Select Sede: fondo purple-900 y texto blanco === */
+#filtroSede {
+    background-color: #6d28d9 !important;
+    /* purple-900 */
+    color: #ffffff !important;
+    border: 1px solid #4c1d95 !important;
+    border-radius: .5rem !important;
+    padding: .5rem 2.25rem .5rem .75rem !important;
+    font-weight: 600 !important;
+
+    -webkit-appearance: none !important;
+    -moz-appearance: none !important;
+    appearance: none !important;
+
+    background-image:
+        url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='white' viewBox='0 0 24 24'%3E%3Cpath d='M7 10l5 5 5-5H7z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat !important;
+    background-position: right .6rem center !important;
+    background-size: 1rem !important;
+}
+
+/* Hover / focus */
+#filtroSede:hover {
+    background-color: #4c1d95 !important;
+}
+
+#filtroSede:focus {
+    outline: none !important;
+    box-shadow: 0 0 0 3px rgba(111, 41, 165, 0.35) !important;
+    border-color: #7c3aed !important;
+}
+
+/* Deshabilitado */
+#filtroSede:disabled {
+    opacity: .8 !important;
+    cursor: not-allowed !important;
+}
+
+/* Opciones del desplegable */
+#filtroSede option {
+    background-color: #581c87 !important;
+    color: #ffffff !important;
+}
+
+#filtroSede option:hover,
+#filtroSede option:checked {
+    background-color: #4c1d95 !important;
+    color: #ffffff !important;
+}

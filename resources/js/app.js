@@ -1,5 +1,12 @@
 import './bootstrap';
 import './admin-topbar-search.js';
-import './calendar';      // tu calendar.js
-import './stats-panel';   // <-- nuevo
+import './calendar';      
+import './stats-panel';
+import './stats-chart';
+import './patient-detail';
 import '../css/calendar.css';
+import '../css/datatables-purple.css';
+import '../css/stats.css';
+import './force-password.js';
+import './admin/noticias.js';
+import "./portal/eliminar-cuenta.js";

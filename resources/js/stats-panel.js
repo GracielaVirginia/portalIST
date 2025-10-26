@@ -1,3 +1,4 @@
+
 (function () {
     function attach() {
         const panel = document.getElementById('statsPanel');

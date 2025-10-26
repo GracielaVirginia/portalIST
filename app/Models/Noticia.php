@@ -43,18 +43,11 @@ class Noticia extends Model
     /* ============== Accessors / Helpers ============== */
 
     // URL pública de la imagen (si guardas rutas relativas en /storage o /public)
-    public function getImagenUrlAttribute(): ?string
-    {
-        if (!$this->imagen) return null;
+public function getImagenUrlAttribute(): ?string
+{
+    if (!$this->imagen) return null;
+    if (preg_match('/^https?:\/\//i', $this->imagen)) return $this->imagen;
+    return \Storage::disk('public')->url($this->imagen); // requiere storage:link
+}
 
-        // Si ya es URL absoluta
-        if (preg_match('/^https?:\/\//i', $this->imagen)) {
-            return $this->imagen;
-        }
-
-        // Si guardas en public/...
-        return asset($this->imagen);
-        // O si usas Storage::disk('public'):
-        // return \Storage::disk('public')->url($this->imagen);
-    }
 }

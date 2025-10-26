@@ -15,6 +15,6 @@ class ClearSessionController extends Controller
         $request->session()->regenerateToken();
 
         // Redirige a donde desees
-        return redirect('/login')->with('status', 'La sesión del navegador ha sido cerrada.');
+        return redirect('/')->with('status', 'La sesión del navegador ha sido cerrada.');
     }
 }

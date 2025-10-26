@@ -5,7 +5,7 @@
 ])
 
 {{-- Fondo general (degradado purple) --}}
-<div class="min-h-screen w-full bg-gradient-to-br from-purple-900 via-indigo-400 to-fuchsia-200
+<div class="min-h-screen w-full bg-gradient-to-br from-purple-900 via-purple-700 to-purple-200
             text-gray-100 antialiased">
 
   {{-- Capa para permitir contraste (contenedor) --}}

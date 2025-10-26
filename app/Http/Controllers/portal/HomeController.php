@@ -8,6 +8,7 @@ use App\Models\GestionSaludCompleta;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
 use Illuminate\Support\Str;
+use App\Models\Noticia;
 
 class HomeController extends Controller
 {
@@ -26,7 +27,7 @@ class HomeController extends Controller
         $applyPatient = function ($q) use ($numero, $user, $tipoDoc) {
             if ($numero) {
                 $q->where('tipo_documento', $tipoDoc)
-                    ->where('numero_documento', $numero);
+                  ->where('numero_documento', $numero);
             } elseif ($user && isset($user->email) && $user->email) {
                 $q->where('email', $user->email);
             }
@@ -47,8 +48,7 @@ class HomeController extends Controller
         if (!empty($g?->fecha_nacimiento)) {
             try {
                 $edad = Carbon::parse($g->fecha_nacimiento)->age;
-            } catch (\Throwable $e) {
-            }
+            } catch (\Throwable $e) {}
         }
 
         // Flags crónicos
@@ -72,11 +72,10 @@ class HomeController extends Controller
             'condiciones' => $condiciones,
         ];
 
-        // === Normalizador de especialidades -> códigos consistentes para los componentes ===
+        // === Normalizador de especialidades -> códigos consistentes para los componentes
         $mapEsp = function (?string $s): array {
             $raw = trim((string)$s);
             $up  = Str::upper(Str::ascii($raw));
-            // coincidencias por contiene
             if (Str::contains($up, 'RADIO') || Str::contains($up, 'RX')) {
                 return ['code' => 'RX', 'label' => 'Radiografía'];
             }
@@ -92,7 +91,6 @@ class HomeController extends Controller
             if (Str::contains($up, 'MED') || Str::contains($up, 'INTERNA')) {
                 return ['code' => 'MED_INT', 'label' => 'Medicina Interna'];
             }
-            // default: usa texto crudo
             return ['code' => $up ?: 'OTRO', 'label' => ($raw ?: 'Otro')];
         };
 
@@ -102,7 +100,7 @@ class HomeController extends Controller
             ->orderByDesc('created_at')
             ->get();
 
-        $totalResultados = $gestiones->count(); // <-- aquí deben salir los 6
+        $totalResultados = $gestiones->count();
 
         // 4) Agrupado por especialidad (sidebar)
         $porEspecialidad = $gestiones
@@ -130,36 +128,46 @@ class HomeController extends Controller
             'alertas'                => $applyPatient(GestionSaludCompleta::query())
                 ->where(function ($q) {
                     $q->where('seguimiento_requerido', true)
-                        ->orWhereDate('fecha_proximo_control', '<=', Carbon::today()->addDays(7));
+                      ->orWhereDate('fecha_proximo_control', '<=', Carbon::today()->addDays(7));
                 })->count(),
         ];
 
-        // 6) Widget: últimos resultados (armados para el componente)
+        // 6) Widget: últimos resultados
         $itemsRecientes = $gestiones->take(6)->map(function ($r) use ($mapEsp) {
             $esp = $mapEsp($r->especialidad);
             return [
-                'id'               => $r->id,
-                'especialidad'     => $esp['code'],                       // RX/ECO/LAB/MED_INT/ENDO
-                'examen_nombre'    => $r->examen_nombre ?: $esp['label'],
-                'examen_codigo'    => $r->examen_codigo ?: '',
-                'fecha'            => optional($r->fecha_atencion)->format('Y-m-d H:i') ?: optional($r->created_at)->format('Y-m-d H:i'),
-                'estado'           => $r->tiene_informe ? 'DISPONIBLE' : ($r->estado_solicitud ?: '—'),
-                'url_pdf_informe'  => $r->url_pdf_informe,
-                'viewer'           => false,
+                'id'              => $r->id,
+                'especialidad'    => $esp['code'],
+                'examen_nombre'   => $r->examen_nombre ?: $esp['label'],
+                'examen_codigo'   => $r->examen_codigo ?: '',
+                'fecha'           => optional($r->fecha_atencion)->format('Y-m-d H:i') ?: optional($r->created_at)->format('Y-m-d H:i'),
+                'estado'          => $r->tiene_informe ? 'DISPONIBLE' : ($r->estado_solicitud ?: '—'),
+                'url_pdf_informe' => $r->url_pdf_informe,
+                'viewer'          => false,
             ];
         })->values()->all();
 
         // 7) Sidebar payload
         $sidebar = [
             'resultados' => [
-                'total' => $totalResultados,
-                'por_especialidad' => $porEspecialidad, // cada item: ['especialidad'=>'RX','label'=>'Radiografía','count'=>N]
+                'total'            => $totalResultados,
+                'por_especialidad' => $porEspecialidad,
             ],
         ];
 
-        // 8) (Opcional) series y sugerencias vacías por ahora
+        // 8) Series/sugerencias (placeholder)
         $seriesControles = ['tension' => [], 'glucosa' => [], 'peso' => []];
         $sugerencias     = [];
+
+        // 9) Noticia destacada para el home
+        $destacada = Noticia::where('destacada', true)->latest()->first();
+        $noticia = $destacada ? [
+            'id'     => $destacada->id,
+            'titulo' => $destacada->titulo,
+            'bajada' => $destacada->bajada,
+            'imagen' => $destacada->imagen_url, // accessor del modelo
+            'url'    => route('portal.noticias.show', $destacada->id),
+        ] : null;
 
         return view('portal.home', [
             'paciente'         => $paciente,
@@ -168,6 +176,7 @@ class HomeController extends Controller
             'itemsRecientes'   => $itemsRecientes,
             'seriesControles'  => $seriesControles,
             'sugerencias'      => $sugerencias,
+            'noticia'          => $noticia,
         ]);
     }
 }

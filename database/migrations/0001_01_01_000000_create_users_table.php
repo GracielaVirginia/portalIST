@@ -19,13 +19,14 @@ return new class extends Migration
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->string('lugar_cita')->nullable();
-            $table->boolean('force_password_change')->default(false);
+            $table->boolean('password_needs_change')->default(false);
             $table->boolean('is_blocked')->default(false);
             $table->integer('failed_login_attempts')->default(0);
             $table->dateTime('blocked_at')->nullable();
             $table->boolean('is_validated')->default(false);
             $table->integer('failed_validated_attempts')->default(0);
-            $table->string('theme', 20)->default('blue'); // 👈 ¡Nuevo campo!
+            $table->string('theme', 20)->default('blue');
+            $table->boolean('added')->default(false);
             $table->rememberToken();
             $table->timestamps();
         });
