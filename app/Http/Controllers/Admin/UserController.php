@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 use App\Models\GestionSaludCompleta;
+use Illuminate\Validation\Rule;
 
 class UserController extends Controller
 {
@@ -332,4 +333,178 @@ public function updateUnregistered(Request $request, string $rut)
     return back()->withErrors('No se pudo actualizar el registro.');
 }
 
+public function updateUnregisteredEmail(Request $request, string $rut)
+{
+    $data = $request->validate([
+        'email' => ['required','email','max:150'],
+    ]);
+
+    // Actualiza TODOS los registros del RUT (consistencia)
+    // Si prefieres solo el más reciente, usa ->latest('created_at')->first() y guarda ese.
+    $updated = GestionSaludCompleta::porRut($rut)->update([
+        'email' => $data['email'],
+        'updated_at' => now(), // si tu esquema lo usa
+    ]);
+
+    if ($updated === 0) {
+        return response()->json(['ok' => false, 'error' => 'No se encontró el RUT.'], 404);
+    }
+
+    return response()->json(['ok' => true]);
 }
+
+public function updateUnregisteredRut(Request $request, string $rut)
+{
+    // Tomar el nuevo valor tal cual
+    $data = $request->validate([
+        'rut' => ['required'],
+    ]);
+
+    $newRut = $data['rut'];
+
+    // Actualizar todos los registros del RUT antiguo al nuevo
+    $updated = GestionSaludCompleta::porRut($rut)->update([
+        'numero_documento' => $newRut,
+        'updated_at' => now(),
+    ]);
+
+    if ($updated === 0) {
+        return response()->json(['ok' => false, 'error' => 'No se encontró el RUT.'], 404);
+    }
+
+    return response()->json(['ok' => true]);
+}
+    public function create()
+    {
+        // Distincts para selects, ordenados y limpios
+        $sexos = GestionSaludCompleta::query()
+            ->whereNotNull('sexo')->distinct()->orderBy('sexo')
+            ->pluck('sexo')->filter()->values();
+
+        $gruposSang = GestionSaludCompleta::query()
+            ->whereNotNull('grupo_sanguineo')->distinct()->orderBy('grupo_sanguineo')
+            ->pluck('grupo_sanguineo')->filter()->values();
+
+        $tiposGestion = GestionSaludCompleta::query()
+            ->whereNotNull('tipo_gestion')->distinct()->orderBy('tipo_gestion')
+            ->pluck('tipo_gestion')->filter()->values();
+
+        $especialidades = GestionSaludCompleta::query()
+            ->whereNotNull('especialidad')->distinct()->orderBy('especialidad')
+            ->pluck('especialidad')->filter()->values();
+
+        $tiposExamen = GestionSaludCompleta::query()
+            ->whereNotNull('tipo_examen')->distinct()->orderBy('tipo_examen')
+            ->pluck('tipo_examen')->filter()->values();
+
+        $examenCodigos = GestionSaludCompleta::query()
+            ->whereNotNull('examen_codigo')->distinct()->orderBy('examen_codigo')
+            ->pluck('examen_codigo')->filter()->values();
+
+        $examenNombres = GestionSaludCompleta::query()
+            ->whereNotNull('examen_nombre')->distinct()->orderBy('examen_nombre')
+            ->pluck('examen_nombre')->filter()->values();
+
+        $sedes = GestionSaludCompleta::query()
+            ->whereNotNull('lugar_cita')->distinct()->orderBy('lugar_cita')
+            ->pluck('lugar_cita')->filter()->values();
+
+        $estadosSolicitud = GestionSaludCompleta::query()
+            ->whereNotNull('estado_solicitud')->distinct()->orderBy('estado_solicitud')
+            ->pluck('estado_solicitud')->filter()->values();
+
+        $tiposAtencion = GestionSaludCompleta::query()
+            ->whereNotNull('tipo_atencion')->distinct()->orderBy('tipo_atencion')
+            ->pluck('tipo_atencion')->filter()->values();
+
+        $modalidadesAtencion = GestionSaludCompleta::query()
+            ->whereNotNull('modalidad_atencion')->distinct()->orderBy('modalidad_atencion')
+            ->pluck('modalidad_atencion')->filter()->values();
+
+        $estadosAsistencia = GestionSaludCompleta::query()
+            ->whereNotNull('estado_asistencia')->distinct()->orderBy('estado_asistencia')
+            ->pluck('estado_asistencia')->filter()->values();
+
+        $nivelesUrgencia = GestionSaludCompleta::query()
+            ->whereNotNull('nivel_urgencia')->distinct()->orderBy('nivel_urgencia')
+            ->pluck('nivel_urgencia')->filter()->values();
+
+        $idiomas = GestionSaludCompleta::query()
+            ->whereNotNull('idioma_preferido')->distinct()->orderBy('idioma_preferido')
+            ->pluck('idioma_preferido')->filter()->values();
+
+        $origenesSolicitud = GestionSaludCompleta::query()
+            ->whereNotNull('origen_solicitud')->distinct()->orderBy('origen_solicitud')
+            ->pluck('origen_solicitud')->filter()->values();
+
+        return view('admin.users.create', compact(
+            'sexos','gruposSang','tiposGestion','especialidades','tiposExamen',
+            'examenCodigos','examenNombres','sedes','estadosSolicitud',
+            'tiposAtencion','modalidadesAtencion','estadosAsistencia',
+            'nivelesUrgencia','idiomas','origenesSolicitud'
+        ));
+    }
+
+    public function store(Request $request)
+    {
+        // Validación mínima y directa (coincide con tus nombres de columnas)
+        $data = $request->validate([
+            // Paciente
+            'tipo_documento'    => ['required','string','max:20'], // ej: RUT
+            'numero_documento'  => ['required','string','max:30'],
+            'nombre_paciente'   => ['required','string','max:150'],
+            'fecha_nacimiento'  => ['nullable','date'],
+            'sexo'              => ['nullable','string','max:30'],
+            'genero'            => ['nullable','string','max:50'],
+            'telefono'          => ['nullable','string','max:50'],
+            'email'             => ['nullable','string','max:150'],
+            'direccion'         => ['nullable','string','max:200'],
+            'grupo_sanguineo'   => ['nullable','string','max:10'],
+
+            // Preferencias
+            'idioma_preferido'      => ['nullable','string','max:50'],
+            'notificaciones_email'  => ['nullable','boolean'],
+            'notificaciones_sms'    => ['nullable','boolean'],
+            'notificaciones_app'    => ['nullable','boolean'],
+
+            // Solicitud / Gestión
+            'origen_solicitud'      => ['nullable','string','max:100'],
+            'tipo_gestion'          => ['nullable','string','max:100'],
+            'especialidad'          => ['nullable','string','max:120'],
+            'tipo_examen'           => ['nullable','string','max:120'],
+            'examen_codigo'         => ['nullable','string','max:50'],
+            'examen_nombre'         => ['nullable','string','max:200'],
+            'fecha_solicitud'       => ['nullable','date'],
+            'fecha_cita_programada' => ['nullable','date'],
+            'lugar_cita'            => ['nullable','string','max:150'],
+            'estado_solicitud'      => ['nullable','string','max:100'],
+
+            // Atención
+            'tipo_atencion'      => ['nullable','string','max:100'],
+            'modalidad_atencion' => ['nullable','string','max:100'],
+            'fecha_atencion'     => ['nullable','date'],
+            'estado_asistencia'  => ['nullable','string','max:100'],
+
+            // Seguridad
+            'nivel_urgencia'     => ['nullable','string','max:50'],
+        ]);
+
+        // Normaliza los checkboxes booleanos (si no vienen, false)
+        foreach (['notificaciones_email','notificaciones_sms','notificaciones_app'] as $bool) {
+            $data[$bool] = isset($data[$bool]) ? (bool)$data[$bool] : false;
+        }
+
+        // Auditoría básica
+        $data['created_at'] = now();
+        $data['updated_at'] = now();
+
+        // Crea el registro
+        GestionSaludCompleta::create($data);
+
+        return redirect()
+            ->route('admin.users.unregistered')
+            ->with('ok', 'Paciente creado correctamente.');
+    }
+}
+
+

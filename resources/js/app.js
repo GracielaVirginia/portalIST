@@ -10,3 +10,6 @@ import '../css/stats.css';
 import './force-password.js';
 import './admin/noticias.js';
 import "./portal/eliminar-cuenta.js";
+import './admin/tickets-index';
+import './admin/unregistered-email.js';
+import './admin/unregistered-rut.js';

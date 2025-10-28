@@ -1,4 +1,4 @@
-// resources/js/patient-detail.js  (versión debug)
+// resources/js/patient-detail.js  (versión integrada con CTA editar por RUT)
 
 console.log('[patient] módulo cargado');
 
@@ -12,16 +12,20 @@ console.log('[patient] módulo cargado');
             return;
         }
 
+        // Endpoints / patrones desde data-atributos
         const LOOKUP_URL = panel.dataset.lookup;
         const UNBLOCK_TPL = panel.dataset.unblockPattern;
         const DELETE_TPL = panel.dataset.deletePattern;
+        const EDIT_TPL = panel.dataset.editPattern; // 👈 NUEVO: patrón para editar por RUT
 
-        console.log('[patient] endpoints:', { LOOKUP_URL, UNBLOCK_TPL, DELETE_TPL });
+        console.log('[patient] endpoints:', { LOOKUP_URL, UNBLOCK_TPL, DELETE_TPL, EDIT_TPL });
 
+        // Referencias de UI
         const msgEl = document.getElementById('patientMsg');
         const tableWrap = document.getElementById('patientTableWrap');
         const tbody = document.getElementById('patientTableBody');
         const ctaRegister = document.getElementById('patientCtaRegister');
+        const linkEditar = document.getElementById('linkEditarNoReg'); // 👈 NUEVO: <a> del CTA
 
         const csrf = document.querySelector('meta[name="csrf-token"]')?.content || '';
         if (!csrf) console.warn('[patient] WARNING: no se encontró <meta name="csrf-token">. POST/DELETE fallarán en producción.');
@@ -34,7 +38,7 @@ console.log('[patient] módulo cargado');
             showMsg('Buscando…');
             tableWrap?.classList.add('hidden');
             ctaRegister?.classList.add('hidden');
-            tbody && (tbody.innerHTML = '');
+            if (tbody) tbody.innerHTML = '';
 
             const url = `${LOOKUP_URL}?rut=${encodeURIComponent(rut)}`;
             console.log('[patient] LOOKUP fetch', url);
@@ -60,12 +64,23 @@ console.log('[patient] módulo cargado');
                     throw new Error(msg);
                 }
 
+                // === Usuario NO registrado → mostrar CTA con link a editar por RUT ===
                 if (!data.exists) {
-                    showMsg(`RUT ${data.rut}: usuario NO registrado`);
+                    const rutNorm = (data.rut || rut || '').toUpperCase();
+                    showMsg(`RUT ${rutNorm}: usuario NO registrado`);
+
+                    // Armar el href al edit usando el patrón de ruta
+                    if (linkEditar && EDIT_TPL) {
+                        linkEditar.href = EDIT_TPL.replace('__RUT__', encodeURIComponent(rutNorm));
+                    } else {
+                        console.warn('[patient] No hay EDIT_TPL o linkEditar para armar el enlace de edición.');
+                    }
+
                     ctaRegister?.classList.remove('hidden');
                     return;
                 }
 
+                // === Usuario EXISTE → render de la fila ===
                 const u = data.user;
                 const estadoHtml = u.blocked
                     ? `<span class="px-2 py-1 text-xs rounded bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-200">Bloqueado</span>`
@@ -79,14 +94,14 @@ console.log('[patient] módulo cargado');
 
                 if (tbody) {
                     tbody.innerHTML = `
-            <tr class="border-t border-slate-100 dark:border-slate-700">
-              <td class="px-4 py-3">${u.name ?? ''}</td>
-              <td class="px-4 py-3">${u.apellido ?? ''}</td>
-              <td class="px-4 py-3">${u.rut ?? ''}</td>
-              <td class="px-4 py-3">${estadoHtml}</td>
-              <td class="px-4 py-3 flex gap-2">${unblockBtn} ${deleteBtn}</td>
-            </tr>
-          `;
+                        <tr class="border-t border-slate-100 dark:border-slate-700">
+                          <td class="px-4 py-3">${u.name ?? ''}</td>
+                          <td class="px-4 py-3">${u.apellido ?? ''}</td>
+                          <td class="px-4 py-3">${u.rut ?? ''}</td>
+                          <td class="px-4 py-3">${estadoHtml}</td>
+                          <td class="px-4 py-3 flex gap-2">${unblockBtn} ${deleteBtn}</td>
+                        </tr>
+                    `;
                 }
 
                 tableWrap?.classList.remove('hidden');

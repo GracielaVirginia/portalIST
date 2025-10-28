@@ -1,25 +1,30 @@
 /* ===========================
    Skin morado DataTables (Vite)
-   Aplica a #tablaRegistrados, #tablaNoRegistrados, #tablaNoticias, #tablaAdministradores
+   Incluye: #tablaRegistrados, #tablaNoRegistrados, #tablaNoticias,
+   #tablaAdministradores, #tablaFaqs, #tablaTickets, #tablaReviews
    =========================== */
 
 /* ----- TABLAS: encabezados, filas, celdas ----- */
 #tablaRegistrados thead th,
 #tablaNoRegistrados thead th,
 #tablaNoticias thead th,
-#tablaAdministradores thead th {
+#tablaAdministradores thead th,
+#tablaFaqs thead th,
+#tablaTickets thead th,
+#tablaReviews thead th {
     border-bottom: 2px solid rgba(124, 58, 237, 0.35) !important;
     color: #5b21b6 !important;
-    /* purple-800 */
     font-weight: 700 !important;
     background-color: #f5f3ff !important;
-    /* purple-50 */
 }
 
 #tablaRegistrados tbody tr:hover,
 #tablaNoRegistrados tbody tr:hover,
 #tablaNoticias tbody tr:hover,
-#tablaAdministradores tbody tr:hover {
+#tablaAdministradores tbody tr:hover,
+#tablaFaqs tbody tr:hover,
+#tablaTickets tbody tr:hover,
+#tablaReviews tbody tr:hover {
     background-color: rgba(124, 58, 237, 0.08) !important;
     transition: background-color .2s ease !important;
 }
@@ -27,7 +32,10 @@
 #tablaRegistrados tbody td,
 #tablaNoRegistrados tbody td,
 #tablaNoticias tbody td,
-#tablaAdministradores tbody td {
+#tablaAdministradores tbody td,
+#tablaFaqs tbody td,
+#tablaTickets tbody td,
+#tablaReviews tbody td {
     padding-top: 0.9rem !important;
     padding-bottom: 0.9rem !important;
     vertical-align: middle !important;
@@ -38,7 +46,10 @@
 #tablaRegistrados tbody td:first-child,
 #tablaNoRegistrados tbody td:first-child,
 #tablaNoticias tbody td:first-child,
-#tablaAdministradores tbody td:first-child {
+#tablaAdministradores tbody td:first-child,
+#tablaFaqs tbody td:first-child,
+#tablaTickets tbody td:first-child,
+#tablaReviews tbody td:first-child {
     border-top-left-radius: .5rem !important;
     border-bottom-left-radius: .5rem !important;
 }
@@ -46,7 +57,10 @@
 #tablaRegistrados tbody td:last-child,
 #tablaNoRegistrados tbody td:last-child,
 #tablaNoticias tbody td:last-child,
-#tablaAdministradores tbody td:last-child {
+#tablaAdministradores tbody td:last-child,
+#tablaFaqs tbody td:last-child,
+#tablaTickets tbody td:last-child,
+#tablaReviews tbody td:last-child {
     border-top-right-radius: .5rem !important;
     border-bottom-right-radius: .5rem !important;
 }
@@ -55,7 +69,10 @@
 #tablaRegistrados_wrapper,
 #tablaNoRegistrados_wrapper,
 #tablaNoticias_wrapper,
-#tablaAdministradores_wrapper {
+#tablaAdministradores_wrapper,
+#tablaFaqs_wrapper,
+#tablaTickets_wrapper,
+#tablaReviews_wrapper {
     font-size: 0.95rem !important;
     color: #1e1b4b !important;
 }
@@ -64,14 +81,20 @@
 #tablaRegistrados_wrapper .dataTables_length,
 #tablaNoRegistrados_wrapper .dataTables_length,
 #tablaNoticias_wrapper .dataTables_length,
-#tablaAdministradores_wrapper .dataTables_length {
+#tablaAdministradores_wrapper .dataTables_length,
+#tablaFaqs_wrapper .dataTables_length,
+#tablaTickets_wrapper .dataTables_length,
+#tablaReviews_wrapper .dataTables_length {
     margin-bottom: .5rem !important;
 }
 
 #tablaRegistrados_wrapper .dataTables_length select,
 #tablaNoRegistrados_wrapper .dataTables_length select,
 #tablaNoticias_wrapper .dataTables_length select,
-#tablaAdministradores_wrapper .dataTables_length select {
+#tablaAdministradores_wrapper .dataTables_length select,
+#tablaFaqs_wrapper .dataTables_length select,
+#tablaTickets_wrapper .dataTables_length select,
+#tablaReviews_wrapper .dataTables_length select {
     background: #F3E8FF !important;
     color: #4c1d95 !important;
     border: 1px solid rgba(124, 58, 237, .35) !important;
@@ -85,29 +108,36 @@
 #tablaRegistrados_filter,
 #tablaNoRegistrados_filter,
 #tablaNoticias_filter,
-#tablaAdministradores_filter {
+#tablaAdministradores_filter,
+#tablaFaqs_filter,
+#tablaTickets_filter,
+#tablaReviews_filter {
     margin: .5rem 0 1rem 0 !important;
 }
 
 #tablaRegistrados_filter label,
 #tablaNoRegistrados_filter label,
 #tablaNoticias_filter label,
-#tablaAdministradores_filter label {
+#tablaAdministradores_filter label,
+#tablaFaqs_filter label,
+#tablaTickets_filter label,
+#tablaReviews_filter label {
     display: flex !important;
     align-items: center !important;
     gap: .5rem !important;
     font-weight: 700 !important;
     color: #6d28d9 !important;
-    /* purple-700 */
     font-size: 0 !important;
-    /* oculta “Buscar:” nativo */
     position: relative !important;
 }
 
 #tablaRegistrados_filter label::before,
 #tablaNoRegistrados_filter label::before,
 #tablaNoticias_filter label::before,
-#tablaAdministradores_filter label::before {
+#tablaAdministradores_filter label::before,
+#tablaFaqs_filter label::before,
+#tablaTickets_filter label::before,
+#tablaReviews_filter label::before {
     content: 'Buscar' !important;
     font-size: .95rem !important;
     color: #6d28d9 !important;
@@ -117,7 +147,10 @@
 #tablaRegistrados_filter>label>input[type=search],
 #tablaNoRegistrados_filter>label>input[type=search],
 #tablaNoticias_filter>label>input[type=search],
-#tablaAdministradores_filter>label>input[type=search] {
+#tablaAdministradores_filter>label>input[type=search],
+#tablaFaqs_filter>label>input[type=search],
+#tablaTickets_filter>label>input[type=search],
+#tablaReviews_filter>label>input[type=search] {
     font-size: .95rem !important;
     background: #F3E8FF !important;
     color: #4c1d95 !important;
@@ -133,7 +166,10 @@
 #tablaRegistrados_filter>label>input[type=search]:focus,
 #tablaNoRegistrados_filter>label>input[type=search]:focus,
 #tablaNoticias_filter>label>input[type=search]:focus,
-#tablaAdministradores_filter>label>input[type=search]:focus {
+#tablaAdministradores_filter>label>input[type=search]:focus,
+#tablaFaqs_filter>label>input[type=search]:focus,
+#tablaTickets_filter>label>input[type=search]:focus,
+#tablaReviews_filter>label>input[type=search]:focus {
     border-color: #7e22ce !important;
     box-shadow: 0 0 0 2px rgba(126, 34, 206, .2) !important;
 }
@@ -141,7 +177,10 @@
 #tablaRegistrados_filter>label>input[type=search]::placeholder,
 #tablaNoRegistrados_filter>label>input[type=search]::placeholder,
 #tablaNoticias_filter>label>input[type=search]::placeholder,
-#tablaAdministradores_filter>label>input[type=search]::placeholder {
+#tablaAdministradores_filter>label>input[type=search]::placeholder,
+#tablaFaqs_filter>label>input[type=search]::placeholder,
+#tablaTickets_filter>label>input[type=search]::placeholder,
+#tablaReviews_filter>label>input[type=search]::placeholder {
     color: #6b21a8 !important;
     opacity: .8 !important;
 }
@@ -150,7 +189,10 @@
 #tablaRegistrados_wrapper .dataTables_paginate,
 #tablaNoRegistrados_wrapper .dataTables_paginate,
 #tablaNoticias_wrapper .dataTables_paginate,
-#tablaAdministradores_wrapper .dataTables_paginate {
+#tablaAdministradores_wrapper .dataTables_paginate,
+#tablaFaqs_wrapper .dataTables_paginate,
+#tablaTickets_wrapper .dataTables_paginate,
+#tablaReviews_wrapper .dataTables_paginate {
     margin-top: 1rem !important;
     display: flex !important;
     gap: .4rem !important;
@@ -162,7 +204,10 @@
 #tablaRegistrados_wrapper .dataTables_paginate .paginate_button,
 #tablaNoRegistrados_wrapper .dataTables_paginate .paginate_button,
 #tablaNoticias_wrapper .dataTables_paginate .paginate_button,
-#tablaAdministradores_wrapper .dataTables_paginate .paginate_button {
+#tablaAdministradores_wrapper .dataTables_paginate .paginate_button,
+#tablaFaqs_wrapper .dataTables_paginate .paginate_button,
+#tablaTickets_wrapper .dataTables_paginate .paginate_button,
+#tablaReviews_wrapper .dataTables_paginate .paginate_button {
     border: 1px solid rgba(124, 58, 237, .3) !important;
     background: #F3E8FF !important;
     color: #4c1d95 !important;
@@ -175,7 +220,10 @@
 #tablaRegistrados_wrapper .dataTables_paginate .paginate_button:hover,
 #tablaNoRegistrados_wrapper .dataTables_paginate .paginate_button:hover,
 #tablaNoticias_wrapper .dataTables_paginate .paginate_button:hover,
-#tablaAdministradores_wrapper .dataTables_paginate .paginate_button:hover {
+#tablaAdministradores_wrapper .dataTables_paginate .paginate_button:hover,
+#tablaFaqs_wrapper .dataTables_paginate .paginate_button:hover,
+#tablaTickets_wrapper .dataTables_paginate .paginate_button:hover,
+#tablaReviews_wrapper .dataTables_paginate .paginate_button:hover {
     background: #E9D5FF !important;
     color: #4c1d95 !important;
     transform: translateY(-1px) !important;
@@ -184,7 +232,10 @@
 #tablaRegistrados_wrapper .dataTables_paginate .paginate_button.current,
 #tablaNoRegistrados_wrapper .dataTables_paginate .paginate_button.current,
 #tablaNoticias_wrapper .dataTables_paginate .paginate_button.current,
-#tablaAdministradores_wrapper .dataTables_paginate .paginate_button.current {
+#tablaAdministradores_wrapper .dataTables_paginate .paginate_button.current,
+#tablaFaqs_wrapper .dataTables_paginate .paginate_button.current,
+#tablaTickets_wrapper .dataTables_paginate .paginate_button.current,
+#tablaReviews_wrapper .dataTables_paginate .paginate_button.current {
     background: #6d28d9 !important;
     color: #fff !important;
     border-color: #6d28d9 !important;
@@ -194,7 +245,10 @@
 #tablaRegistrados_wrapper .dataTables_paginate .paginate_button.disabled,
 #tablaNoRegistrados_wrapper .dataTables_paginate .paginate_button.disabled,
 #tablaNoticias_wrapper .dataTables_paginate .paginate_button.disabled,
-#tablaAdministradores_wrapper .dataTables_paginate .paginate_button.disabled {
+#tablaAdministradores_wrapper .dataTables_paginate .paginate_button.disabled,
+#tablaFaqs_wrapper .dataTables_paginate .paginate_button.disabled,
+#tablaTickets_wrapper .dataTables_paginate .paginate_button.disabled,
+#tablaReviews_wrapper .dataTables_paginate .paginate_button.disabled {
     opacity: .45 !important;
     cursor: not-allowed !important;
     box-shadow: none !important;
@@ -204,7 +258,10 @@
 #tablaRegistrados_wrapper .btn-action,
 #tablaNoRegistrados_wrapper .btn-action,
 #tablaNoticias_wrapper .btn-action,
-#tablaAdministradores_wrapper .btn-action {
+#tablaAdministradores_wrapper .btn-action,
+#tablaFaqs_wrapper .btn-action,
+#tablaTickets_wrapper .btn-action,
+#tablaReviews_wrapper .btn-action {
     display: inline-flex !important;
     align-items: center !important;
     justify-content: center !important;
@@ -223,7 +280,10 @@
 #tablaRegistrados_wrapper .btn-action:hover,
 #tablaNoRegistrados_wrapper .btn-action:hover,
 #tablaNoticias_wrapper .btn-action:hover,
-#tablaAdministradores_wrapper .btn-action:hover {
+#tablaAdministradores_wrapper .btn-action:hover,
+#tablaFaqs_wrapper .btn-action:hover,
+#tablaTickets_wrapper .btn-action:hover,
+#tablaReviews_wrapper .btn-action:hover {
     background: #E9D5FF !important;
     transform: translateY(-1px) !important;
 }

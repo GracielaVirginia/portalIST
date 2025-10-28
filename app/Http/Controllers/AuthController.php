@@ -70,7 +70,7 @@ class AuthController extends Controller
         // 3) Bloqueado?
         if ($user->is_blocked) {
             return back()->withErrors([
-                'rut' => 'Tu cuenta está bloqueada por múltiples intentos fallidos.',
+                'password' => 'Tu cuenta está bloqueada por múltiples intentos fallidos.',
             ])->onlyInput('rut');
         }
 

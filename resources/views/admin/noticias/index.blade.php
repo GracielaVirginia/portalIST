@@ -78,11 +78,13 @@
                                     <a href="{{ route('admin.noticias.edit', $n) }}" class="btn-action">✏️ Editar</a>
 
                                     {{-- SweetAlert para eliminar --}}
-<form action="{{ route('admin.noticias.destroy', $n) }}" method="POST" class="form-eliminar inline">
-  @csrf
-  @method('DELETE')
-  <button type="submit" class="btn-action btn-eliminar cursor-pointer">🗑️ Eliminar</button>
-</form>
+                                    <form action="{{ route('admin.noticias.destroy', $n) }}" method="POST"
+                                        class="form-eliminar inline">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="btn-action btn-eliminar cursor-pointer">🗑️
+                                            Eliminar</button>
+                                    </form>
                                     {{-- Toggle: poner en home --}}
                                     <form action="{{ route('admin.noticias.toggle-home', $n) }}" method="POST"
                                         class="inline">

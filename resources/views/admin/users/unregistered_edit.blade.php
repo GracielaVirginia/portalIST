@@ -96,6 +96,10 @@
                 class="inline-flex items-center gap-2 rounded-xl bg-purple-900 text-white text-sm font-semibold px-5 py-2.5 shadow hover:shadow-md hover:bg-purple-800 transition">
           💾 Guardar cambios
         </button>
+              <button id="btnEnviarEmail" type="button"
+              class="px-3 py-1 rounded bg-purple-700 text-white text-sm hover:bg-purple-800 transition">
+        Enviar email
+      </button>
         <a href="{{ route('admin.users.unregistered') }}"
            class="inline-flex items-center gap-2 ms-2 rounded-xl bg-gray-200 text-gray-800 text-sm font-semibold px-4 py-2 hover:bg-gray-300 transition">
           Cancelar

@@ -22,7 +22,8 @@
 @if (Auth::check() && Auth::user()->password_needs_change)
     <x-security.force-password-modal />
 @endif
-    {{-- Header paciente --}}
+{{-- Popup de valoración --}}
+@include('components.review-popup')    {{-- Header paciente --}}
     <x-portal.panel-header :paciente="$paciente" onOrganizar="{{ route('portal.home') }}#organizar" />
 
     {{-- KPIs (informativos) --}}

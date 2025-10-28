@@ -57,6 +57,11 @@
   {{-- ===== Footer ===== --}}
   <footer class="fixed bottom-0 left-0 w-full text-center py-3 bg-purple-100 dark:bg-gray-800 text-purple-900 dark:text-gray-300">
     <p>Versión 3.0.0 | &copy; {{ date('Y') }} Todos los derechos reservados.</p>
+        <span class="mx-2">·</span>
+    <a href="{{ route('soporte.create') }}" class="text-sky-700 dark:text-sky-400 hover:underline">
+      🛈 Ayuda
+    </a>
+
   </footer>
   </div>
 
@@ -64,6 +69,7 @@
   {{-- @include('components.theme-selector')  --}} {{-- eliminado: quitamos el componente de temas --}}
   @include('components.dark-toggle')
   @include('components.help-panel')
+  @include('components.portal.chat-box')
 <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
   {{-- ==== Núcleo del Tema ==== --}}
   <script>

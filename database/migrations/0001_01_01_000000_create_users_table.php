@@ -20,6 +20,7 @@ return new class extends Migration
             $table->string('password');
             $table->string('lugar_cita')->nullable();
             $table->boolean('password_needs_change')->default(false);
+            $table->boolean('review')->default(false);
             $table->boolean('is_blocked')->default(false);
             $table->integer('failed_login_attempts')->default(0);
             $table->dateTime('blocked_at')->nullable();

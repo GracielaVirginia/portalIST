@@ -24,6 +24,14 @@ use App\Http\Controllers\Admin\ValidationController;
 use App\Http\Controllers\Security\UserPasswordController;
 use App\Http\Controllers\Admin\NoticiasController as AdminNoticiasController;
 use App\Http\Controllers\Portal\NoticiasController as PortalNoticiasController;
+use App\Http\Controllers\Admin\FaqController as AdminFaqController;
+use App\Http\Controllers\Portal\FaqController as PortalFaqController;
+use App\Http\Controllers\Admin\AdministradorController;
+use App\Http\Controllers\SoporteController;
+use App\Http\Controllers\ReviewsController;
+use App\Http\Controllers\Admin\ReviewsAdminController;
+
+
 
 
 /*
@@ -37,6 +45,9 @@ Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
     Route::post('/login', [AuthController::class, 'login'])->name('login.attempt');
     Route::post('/auth/verificar-rut', [PacienteController::class, 'verificarRut'])->name('verificar-rut');
+
+Route::get('/ayuda/enviar', [SoporteController::class, 'create'])->name('soporte.create');
+Route::post('/ayuda/enviar', [SoporteController::class, 'store'])->name('soporte.store');
 });
 
 /*
@@ -117,6 +128,7 @@ Route::get('/portal/noticias', [PortalNoticiasController::class, 'index'])->name
 Route::get('/portal/noticias/{id}', [PortalNoticiasController::class, 'show'])->name('portal.noticias.show');
 
 
+Route::post('/reviews', [ReviewsController::class, 'store'])->name('reviews.store');
 });
 
 /*
@@ -158,18 +170,23 @@ Route::get('/admins', [AdminController::class, 'index'])->name('admin.admins.ind
 Route::get('/validations', [ValidationController::class, 'index'])->name('admin.validations.index');
 //no registrados
 Route::get('/users/unregistered', [UserController::class, 'unregistered'])->name('admin.users.unregistered');
-Route::get('/users/unregistered/data', [UserController::class, 'unregisteredData'])->name('admin.users.unregistered.data');
-//crear paciente en el portal
+Route::get('/users/unregistered/{rut}/edit', [UserController::class, 'editUnregistered'])->name('admin.users.unregistered.edit');
+Route::patch('/users/unregistered/{rut}/email', [UserController::class, 'updateUnregisteredEmail'])
+    ->name('admin.users.unregistered.email');//crear paciente en el portal
 Route::get('/users/create', [UserController::class, 'create'])->name('admin.users.create');
-//ENVIAR EL EMAIL
+Route::post('/users', [UserController::class, 'store'])->name('admin.users.store');
+Route::get('/users/unregistered/data', [UserController::class, 'unregisteredData'])
+    ->name('admin.users.unregistered.data');
+    //ENVIAR EL EMAIL
 Route::post('/admin/gestiones/email-route', [AdminGestionesController::class, 'markEmailRoute'])
     ->name('admin.gestiones.emailRoute');
 //editar usuario de la tabla gestiones
-Route::get('/admin/users/edit/{rut}', [UserController::class, 'editUnregistered'])
-    ->name('admin.users.unregistered.edit');
 // Guardar cambios (editar)
 Route::put('/admin/users/edit/{rut}', [UserController::class, 'updateUnregistered'])
     ->name('admin.users.unregistered.update');
+// PATCH SOLO RUT (cambia el RUT de ese paciente no registrado)
+Route::patch('/users/unregistered/{rut}/rut', [UserController::class, 'updateUnregisteredRut'])
+    ->name('admin.users.unregistered.rut');
 
 // 🔎 Buscador AJAX (solo pacientes desde tabla gestiones)
 Route::get('/admin/users/search', [AdminDashboardController::class, 'searchUsers'])->name('admin.users.search');
@@ -201,4 +218,28 @@ Route::delete('/admin/noticias/{noticia}',       [AdminNoticiasController::class
 // Toggle “Poner en home” (marca esta noticia como destacada y desmarca el resto)
 Route::patch('/admin/noticias/{noticia}/toggle-home', [AdminNoticiasController::class, 'toggleDestacada'])
     ->name('admin.noticias.toggle-home');
+    /** Admin CRUD */
+Route::get   ('/admin/faqs',              [AdminFaqController::class,'index'])->name('admin.faqs.index');
+Route::get   ('/admin/faqs/create',       [AdminFaqController::class,'create'])->name('admin.faqs.create');
+Route::post  ('/admin/faqs',              [AdminFaqController::class,'store'])->name('admin.faqs.store');
+Route::get   ('/admin/faqs/{faq}/edit',   [AdminFaqController::class,'edit'])->name('admin.faqs.edit');
+Route::put   ('/admin/faqs/{faq}',        [AdminFaqController::class,'update'])->name('admin.faqs.update');
+Route::delete('/admin/faqs/{faq}',        [AdminFaqController::class,'destroy'])->name('admin.faqs.destroy');
+Route::patch ('/admin/faqs/{faq}/toggle', [AdminFaqController::class,'toggle'])->name('admin.faqs.toggle');
+
+/** Portal JSON para el modal del chat box */
+Route::get('/portal/faqs', [PortalFaqController::class,'list'])->name('portal.faqs.list');
+// Administradores (CRUD + toggle)
+Route::get   ('/admin/administradores',                    [AdministradorController::class, 'index'])->name('admin.administradores.index');
+Route::get   ('/admin/administradores/crear',              [AdministradorController::class, 'create'])->name('admin.administradores.create');
+Route::post  ('/admin/administradores',                    [AdministradorController::class, 'store'])->name('admin.administradores.store');
+Route::get   ('/admin/administradores/{administrador}/editar', [AdministradorController::class, 'edit'])->name('admin.administradores.edit');
+Route::put   ('/admin/administradores/{administrador}',    [AdministradorController::class, 'update'])->name('admin.administradores.update');
+Route::delete('/admin/administradores/{administrador}',    [AdministradorController::class, 'destroy'])->name('admin.administradores.destroy');
+Route::patch ('/admin/administradores/{administrador}/toggle', [AdministradorController::class, 'toggle'])->name('admin.administradores.toggle');
+Route::get('/admin/tickets', [SoporteController::class, 'index'])->name('admin.tickets.index');
+Route::get('/admin/tickets/{ticket}',   [SoporteController::class, 'show'])->name('admin.tickets.show');
+Route::patch('/admin/tickets/{ticket}/resolve', [SoporteController::class, 'resolve'])->name('admin.tickets.resolve');
+Route::get('/admin/reviews', [ReviewsAdminController::class, 'index'])->name('admin.reviews.index');
+ Route::get('/reviews/{review}', [ReviewsController::class, 'show'])->name('admin.reviews.show');
 });
