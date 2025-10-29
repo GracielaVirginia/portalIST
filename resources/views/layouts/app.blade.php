@@ -30,6 +30,7 @@
 
 <body class="min-h-screen transition-colors duration-300" data-color="purple">
   <div class="min-h-screen flex flex-col">
+  @include('components.dark-toggle')
 
     <main id="content" class="flex-grow">
       {{-- ===== Flash messages (autocierra en 3s) ===== --}}
@@ -55,21 +56,68 @@
     </main>
 
   {{-- ===== Footer ===== --}}
-  <footer class="fixed bottom-0 left-0 w-full text-center py-3 bg-purple-100 dark:bg-gray-800 text-purple-900 dark:text-gray-300">
-    <p>Versión 3.0.0 | &copy; {{ date('Y') }} Todos los derechos reservados.</p>
-        <span class="mx-2">·</span>
-    <a href="{{ route('soporte.create') }}" class="text-sky-700 dark:text-sky-400 hover:underline">
-      🛈 Ayuda
-    </a>
+<footer class="fixed bottom-0 left-0 w-full z-40">
+  <div class="mx-auto max-w-7xl px-4 py-3
+              flex flex-col sm:flex-row items-center justify-center sm:justify-between gap-2
+              bg-purple-100/90 dark:bg-gray-900/90 backdrop-blur
+              border-t border-purple-200/60 dark:border-gray-800
+              text-purple-900 dark:text-gray-200">
 
-  </footer>
+    <p class="text-sm">
+      Versión 3.0.0 · &copy; {{ date('Y') }} Todos los derechos reservados.
+    </p>
+
+    <div class="flex items-center gap-3">
+      {{-- Ayuda (va a tu formulario de soporte) --}}
+      <a href="{{ route('soporte.create') }}"
+         class="inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-sm font-semibold
+                bg-white text-purple-900 border border-purple-200
+                hover:bg-purple-50 hover:border-purple-300
+                dark:bg-gray-800 dark:text-gray-100 dark:border-gray-700 dark:hover:bg-gray-700">
+        <span aria-hidden="true">🛈</span>
+        <span>Ayuda</span>
+      </a>
+
+      {{-- FAQ: abre el modal del chat-box (evento global) --}}
+<footer class="fixed bottom-0 left-0 w-full z-40">
+  <div class="mx-auto max-w-7xl px-4 py-3
+              flex flex-col sm:flex-row items-center justify-center sm:justify-between gap-2
+              bg-purple-100/90 dark:bg-gray-900/90 backdrop-blur
+              border-t border-purple-200/60 dark:border-gray-800
+              text-purple-900 dark:text-gray-200">
+
+    <p class="text-sm">
+      Versión 3.0.0 · &copy; {{ date('Y') }} Todos los derechos reservados.
+    </p>
+
+    <div class="flex items-center gap-3">
+      {{-- Ayuda (formulario de soporte) --}}
+      <a href="{{ route('soporte.create') }}"
+         class="inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-sm font-semibold
+                bg-white text-purple-900 border border-purple-200
+                hover:bg-purple-50 hover:border-purple-300
+                dark:bg-gray-800 dark:text-gray-100 dark:border-gray-700 dark:hover:bg-gray-700">
+        <span aria-hidden="true">🛈</span>
+        <span>Ayuda</span>
+      </a>
+<x-portal.assistant-bot />
+@include('components.portal.chat-box')
+
+
+    </div>
   </div>
+</footer>
 
+
+
+
+
+  </div>
+  </div>
+  @include('components.help-panel')
   {{-- Componentes flotantes --}}
   {{-- @include('components.theme-selector')  --}} {{-- eliminado: quitamos el componente de temas --}}
-  @include('components.dark-toggle')
-  @include('components.help-panel')
-  @include('components.portal.chat-box')
+  {{-- @include('components.portal.chat-box') --}}
 <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
   {{-- ==== Núcleo del Tema ==== --}}
   <script>

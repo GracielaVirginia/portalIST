@@ -23,6 +23,7 @@ public function run(): void
         TipoGestionSeeder::class,
         EspecialidadSeeder::class,
         ExamenNombreSeeder::class,
+        PortalValidacionConfigSeeder::class,
         ]);
 }
 

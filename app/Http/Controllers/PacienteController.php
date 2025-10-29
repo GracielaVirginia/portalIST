@@ -63,7 +63,7 @@ class PacienteController extends Controller
         return response()->json([
             'exists' => true,
             'blocked' => false,
-            'name'   => $paciente->nombre_paciente,
+            // 'name'   => $paciente->nombre_paciente,
             'message'=> 'Paciente encontrado correctamente.',
         ]);
     }

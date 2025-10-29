@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Models\GestionSaludCompleta;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
+use App\Models\PortalValidacionConfig; 
 
 class AuthController extends Controller
 {
@@ -70,7 +71,7 @@ class AuthController extends Controller
         // 3) Bloqueado?
         if ($user->is_blocked) {
             return back()->withErrors([
-                'password' => 'Tu cuenta está bloqueada por múltiples intentos fallidos.',
+                'rutFeedback' => 'Tu cuenta está bloqueada por múltiples intentos fallidos.',
             ])->onlyInput('rut');
         }
 
@@ -114,13 +115,61 @@ class AuthController extends Controller
 
         Log::debug('[LOGIN] forcePasswordChange', ['value' => session('forcePasswordChange')]);
 
-        // 7) Redirección según validación
-        if (!$user->is_validated) {
-            return redirect()->route('validacion')->with('success', 'Bienvenido. Completa la validación.');
-        }
+// 7) Redirección según validación elegida por el administrador
+$modo = PortalValidacionConfig::where('activo', true)->first();
 
-        return redirect()->route('portal.home')->with('success', 'Inicio de sesión exitoso.');
+// LOG: estado previo a redirigir
+Log::info('[LOGIN PACIENTE] Estado de validación', [
+    'user_id'       => $user->id ?? null,
+    'rut'           => $user->rut ?? null,
+    'is_validated'  => (bool)($user->is_validated ?? false),
+    'modo_activo'   => $modo ? $modo->only(['id','slug','nombre']) : null,
+]);
+
+if (!$user->is_validated) {
+    // calcular destino según slug o id
+    $destRouteName = null;
+
+    if ($modo) {
+        if ($modo->slug === 'sin-validacion' || $modo->id == 1) {
+            $destRouteName = 'validacion.sin';
+        } elseif ($modo->slug === 'numero-caso' || $modo->id == 2) {
+            $destRouteName = 'validacion.caso';
+        } elseif ($modo->slug === 'tres-opciones' || $modo->id == 3) {
+            $destRouteName = 'validacion.tres';
+        } elseif ($modo->slug === 'crear-cuenta' || $modo->id == 4) {
+            $destRouteName = 'validacion.cuenta';
+        }
     }
+
+    // fallback si no hay modo activo
+    if (!$destRouteName) {
+        $destRouteName = 'portal.home';
+    }
+
+    $destUrl = route($destRouteName);
+
+    // LOG: a dónde vamos a redirigir
+    Log::warning('[LOGIN PACIENTE] Redirigiendo por validación pendiente', [
+        'dest_route' => $destRouteName,
+        'dest_url'   => $destUrl,
+    ]);
+
+    return redirect()->to($destUrl)
+        ->with('success', 'Bienvenido. Completa la validación.');
+}
+
+// LOG: validado -> va al home del portal
+Log::warning('[LOGIN PACIENTE] Redirigiendo al portal (validado)', [
+    'dest_route' => 'portal.home',
+    'dest_url'   => route('portal.home'),
+]);
+
+return redirect()->route('portal.home')
+    ->with('success', 'Inicio de sesión exitoso.');
+}
+
+
 
     // POST /logout
     public function logout(Request $request)

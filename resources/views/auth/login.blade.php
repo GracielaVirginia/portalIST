@@ -3,6 +3,7 @@
 @section('content')
 
 <div class="min-h-screen w-full flex items-center justify-center bg-purple-100 dark:bg-gray-100">
+<x-portal.info-bloques />
 
   <div class="relative w-full max-w-6xl mx-auto px-4">
     <div class="relative w-full aspect-[16/10] md:aspect-[4/3] lg:aspect-[3/2]">
@@ -17,7 +18,6 @@
            alt="Tema oscuro"
            class="bg-swap bg-img--dark absolute inset-0 m-auto w-full h-full object-contain pointer-events-none select-none opacity-90
                   hidden dark:block" />
-
       {{-- ========== CAPA 2: FORMULARIO (card translúcida) ========== --}}
       <div class="absolute inset-0 flex items-center justify-center p-4">
         <div class="w-[320px] sm:w-[360px]
@@ -123,17 +123,31 @@
 </div>
 
 {{-- ========== MODAL: Olvidé mi contraseña ========== --}}
-<div id="modalRut" class="fixed inset-0 hidden items-center justify-center bg-black/60 z-50">
-  <div class="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-xl w-96 text-gray-900 dark:text-gray-100">
-    <h2 class="text-lg font-bold text-center">Olvidé mi Contraseña</h2>
-    <p class="text-sm mt-3 text-center">
-      Dirígete a la Clínica IST o comunícate con el Administrador para recuperar tus credenciales.
+<div id="modalRut"
+     class="fixed inset-0 hidden items-center justify-center bg-black/60 z-50 backdrop-blur-sm">
+  <div class="bg-white dark:bg-gray-900 p-6 rounded-2xl shadow-2xl w-96
+              text-gray-900 dark:text-gray-100 border border-purple-200 dark:border-purple-800
+              transition-all duration-300 ease-out">
+    <h2 class="text-lg font-bold text-center text-purple-900 dark:text-purple-200">
+      Olvidé mi Contraseña
+    </h2>
+    <p class="text-sm mt-3 text-center leading-relaxed text-gray-700 dark:text-gray-300">
+      Dirígete a la <span class="font-semibold text-purple-800 dark:text-purple-300">Clínica IST</span>
+      o comunícate con el Administrador para recuperar tus credenciales.
     </p>
-    <div class="mt-5 flex justify-center">
-      <button onclick="closeModalRut()" class="btn-primary">Cerrar</button>
+    <div class="mt-6 flex justify-center">
+      <button onclick="closeModalRut()"
+              class="px-5 py-2 rounded-lg font-semibold text-white
+                     bg-purple-900 hover:bg-purple-800
+                     dark:bg-purple-700 dark:hover:bg-purple-600
+                     focus:outline-none focus:ring-2 focus:ring-purple-400 focus:ring-offset-1
+                     transition-all duration-200">
+        Cerrar
+      </button>
     </div>
   </div>
 </div>
+
 
 {{-- ========== MODAL: Ayuda (si lo usas) ========== --}}
 <div id="helpModal" class="fixed inset-0 hidden items-center justify-center bg-black/60 z-50">

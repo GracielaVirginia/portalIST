@@ -161,6 +161,13 @@
                                     Tickets-Soporte
                                 </span>
                             </a>
+                            <a href="{{ route('admin.assistant_rules.index') }}"
+                                class="{{ $linkBase }} {{ $linkText }} hover:bg-purple-900 dark:hover:bg-purple-800 hover:text-white">
+                                <span class="inline-flex items-center gap-2">
+                                    <span class="h-2 w-2 rounded-full bg-purple-700 group-hover:bg-white"></span>
+                                    Configurar Asistente Virtual
+                                </span>
+                            </a>
                             <a href="{{ route('admin.reviews.index') }}"
                                 class="{{ $linkBase }} {{ $linkText }} hover:bg-purple-900 dark:hover:bg-purple-800 hover:text-white">
                                 <span class="inline-flex items-center gap-2">
@@ -201,7 +208,7 @@
                 </div>
 
                 {{-- Validaciones --}}
-                <a href="{{ route('admin.validations.index') }}"
+                <a href="{{ route('admin.validacion.modos') }}"
                     class="{{ $linkBase }} {{ $linkText }} {{ $linkHover }}">
                     <span class="inline-flex items-center gap-2">
                         <span class="{{ $dotBase }}"></span>

@@ -6,31 +6,31 @@
   <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700
               rounded-2xl shadow-lg p-2 flex flex-col items-center gap-2">
 
-    <!-- Botón: Ayuda (chat box) -->
+    <!-- Botón 1: Manual (PDF) — círculo morado -->
     <button type="button"
-            @click="openHelp = true"
+            @click="openManual = true"
             class="w-12 h-12 rounded-full grid place-items-center
-                   text-purple-900 dark:text-gray-100
-                   hover:bg-purple-50 dark:hover:bg-gray-700
-                   border border-transparent hover:border-purple-200 dark:hover:border-gray-600
-                   transition-all"
-            title="Abrir Ayuda" aria-label="Abrir Ayuda">
-      {{-- chat-bubble icon --}}
+                   text-white bg-purple-900 hover:bg-purple-800
+                   dark:bg-purple-700 dark:hover:bg-purple-600
+                   border border-transparent shadow-md transition-all"
+            title="Abrir Manual" aria-label="Abrir Manual">
+      {{-- document-text icon --}}
       <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none"
            viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
         <path stroke-linecap="round" stroke-linejoin="round"
-              d="M8 10h8M8 14h5m7-2a9 9 0 11-18 0 9 9 0 0118 0zm-4 5.5l-3.5-1-2.5 2.5v-3.5"/>
+              d="M7 21h10a2 2 0 002-2V9l-5-5H7a2 2 0 00-2 2v13a2 2 0 002 2z"/>
+        <path stroke-linecap="round" stroke-linejoin="round"
+              d="M14 3v4a1 1 0 001 1h4"/>
       </svg>
     </button>
 
-    <!-- Botón: Video -->
+    <!-- Botón 2: Video — círculo morado (contenido del modal se mantiene tal cual) -->
     <button type="button"
             @click="openVideo = true"
             class="w-12 h-12 rounded-full grid place-items-center
-                   text-purple-900 dark:text-gray-100
-                   hover:bg-purple-50 dark:hover:bg-gray-700
-                   border border-transparent hover:border-purple-200 dark:hover:border-gray-600
-                   transition-all"
+                   text-white bg-purple-900 hover:bg-purple-800
+                   dark:bg-purple-700 dark:hover:bg-purple-600
+                   border border-transparent shadow-md transition-all"
             title="Ver Video" aria-label="Ver Video">
       {{-- play-circle icon --}}
       <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none"
@@ -42,28 +42,26 @@
       </svg>
     </button>
 
-    <!-- Botón: Manual -->
-    <button type="button"
-            @click="openManual = true"
+    <!-- Botón 3: Preguntas Frecuentes (FAQ) — círculo morado -->
+    {{-- <button type="button"
+            @click="openHelp = true"
             class="w-12 h-12 rounded-full grid place-items-center
-                   text-purple-900 dark:text-gray-100
-                   hover:bg-purple-50 dark:hover:bg-gray-700
-                   border border-transparent hover:border-purple-200 dark:hover:border-gray-600
-                   transition-all"
-            title="Abrir Manual" aria-label="Abrir Manual">
-      {{-- book icon --}}
+                   text-white bg-purple-900 hover:bg-purple-800
+                   dark:bg-purple-700 dark:hover:bg-purple-600
+                   border border-transparent shadow-md transition-all"
+            title="Abrir Ayuda" aria-label="Abrir Ayuda">
       <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none"
            viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
         <path stroke-linecap="round" stroke-linejoin="round"
-              d="M12 6.253c-1.657-1.05-3.657-1.21-5.657-.48A2 2 0 004 7.692v9.116a2 2 0 002.343 1.92c2-.73 4-.57 5.657.48m0-12.955c1.657-1.05 3.657-1.21 5.657-.48A2 2 0 0120 7.692v9.116a2 2 0 01-2.343 1.92c-2-.73-4-.57-5.657.48"/>
+              d="M8 10h8M8 14h5m7-2a9 9 0 11-18 0 9 9 0 0118 0zm-4 5.5l-3.5-1-2.5 2.5v-3.5"/>
       </svg>
-    </button>
+    </button> --}}
 
   </div>
 
   <!-- ================ MODALES ================ -->
 
-  <!-- Modal: Ayuda (chat box) -->
+  <!-- Modal: Ayuda (chat box / FAQ) -->
   <div x-show="openHelp" x-cloak
        class="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4"
        @keydown.escape.window="openHelp=false"
@@ -76,7 +74,7 @@
             <path stroke-linecap="round" stroke-linejoin="round"
                   d="M8 10h8M8 14h5m7-2a9 9 0 11-18 0 9 9 0 0118 0zm-4 5.5l-3.5-1-2.5 2.5v-3.5"/>
           </svg>
-          <h3 class="text-base font-semibold">Centro de ayuda</h3>
+          <h3 class="text-base font-semibold">Preguntas Frecuentes (FAQ)</h3>
         </div>
         <button class="rounded-lg px-2 py-1 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
                 @click="openHelp=false">Cerrar</button>

@@ -2,7 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
-use App\Http\Controllers\ValidacionController;
+// use App\Http\Controllers\ValidacionController;
 use App\Http\Controllers\ResultadosController;
 use App\Http\Controllers\PacienteController;
 use App\Http\Controllers\Portal\HomeController;
@@ -20,7 +20,7 @@ use App\Http\Controllers\ExamenNombreController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\NewsController;
 use App\Http\Controllers\Admin\AdminController;
-use App\Http\Controllers\Admin\ValidationController;
+use App\Http\Controllers\Admin\ValidacionController;
 use App\Http\Controllers\Security\UserPasswordController;
 use App\Http\Controllers\Admin\NoticiasController as AdminNoticiasController;
 use App\Http\Controllers\Portal\NoticiasController as PortalNoticiasController;
@@ -30,6 +30,10 @@ use App\Http\Controllers\Admin\AdministradorController;
 use App\Http\Controllers\SoporteController;
 use App\Http\Controllers\ReviewsController;
 use App\Http\Controllers\Admin\ReviewsAdminController;
+use App\Http\Controllers\Validaciones\SinValidacionController;
+use App\Http\Controllers\Validaciones\NumeroCasoController;
+use App\Http\Controllers\Validaciones\TresOpcionesController;
+use App\Http\Controllers\Validaciones\CrearCuentaController;
 
 
 
@@ -48,6 +52,8 @@ Route::middleware('guest')->group(function () {
 
 Route::get('/ayuda/enviar', [SoporteController::class, 'create'])->name('soporte.create');
 Route::post('/ayuda/enviar', [SoporteController::class, 'store'])->name('soporte.store');
+
+Route::post('/assistant/message', [\App\Http\Controllers\Assistant\ChatBotController::class, 'sendMessage'])->name('portal.assistant.message');
 });
 
 /*
@@ -55,82 +61,68 @@ Route::post('/ayuda/enviar', [SoporteController::class, 'store'])->name('soporte
 | Rutas Protegidas (pacientes autenticados)
 |--------------------------------------------------------------------------
 */
-Route::middleware('auth')->group(function () {
-    // Cerrar sesión
-    Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
-//cerrar sesion en el navegador
+    Route::middleware('auth')->group(function () {
+Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+Route::get('/clear-session', [ClearSessionController::class, 'clearSession'])->name('clear.session');
+Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
-    Route::get('/clear-session', [ClearSessionController::class, 'clearSession'])->name('clear.session');
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-
-    // Validación de cuenta
-    Route::get('/validacion', [ValidacionController::class, 'index'])->name('validacion');
-    Route::post('/validacion', [ValidacionController::class, 'store'])->name('validacion.procesar');
-
-    // Resultados del paciente
-    Route::get('/ver-resultados', [ResultadosController::class, 'index'])->name('ver-resultados');
-    // 🏠 Página principal del portal
-    Route::get('/portal', [HomeController::class, 'index'])->name('portal.home');
-    // Ej: /portal → panel principal (header, KPIs, widgets)
-
-    // 📄 Resultados de exámenes — vista general
-    Route::get('/portal/resultados', [ResultadosController::class, 'index'])
-        ->name('portal.resultados.index');
-    // Ej: /portal/resultados
-
-    // 📄 Resultados por especialidad (RX, LAB, ECO, etc.)
-    Route::get('/portal/resultados/especialidad/{esp}', [ResultadosController::class, 'porEspecialidad'])
+// ==============================
+// PÁGINAS DE RESULTADOS  (portal)
+// ==============================
+// 
+Route::get('/ver-resultados', [ResultadosController::class, 'index'])->name('ver-resultados');
+Route::get('/portal', [HomeController::class, 'index'])->name('portal.home');
+Route::get('/portal/resultados', [ResultadosController::class, 'index'])->name('portal.resultados.index');
+// 📄 Resultados por especialidad (RX, LAB, ECO, etc.)
+Route::get('/portal/resultados/especialidad/{esp}', [ResultadosController::class, 'porEspecialidad'])
         ->where('esp', '[A-Za-z]+')
         ->name('portal.resultados.especialidad');
-    // Ej: /portal/resultados/especialidad/RX
-
-    // 📄 Detalle de un resultado individual
-    Route::get('/portal/resultados/{gestion}', [ResultadosController::class, 'show'])
+// 📄 Detalle de un resultado individual
+Route::get('/portal/resultados/{gestion}', [ResultadosController::class, 'show'])
         ->whereNumber('gestion')
         ->name('portal.resultados.show');
-    // Ej: /portal/resultados/152
-
-    // 📄 Descarga o visualización del PDF del informe
-    Route::get('/portal/resultados/{gestion}/pdf', [ResultadosController::class, 'pdf'])
+// 📄 Descarga o visualización del PDF del informe
+Route::get('/portal/resultados/{gestion}/pdf', [ResultadosController::class, 'pdf'])
         ->whereNumber('gestion')
         ->name('portal.resultados.pdf');
-    // Ej: /portal/resultados/152/pdf
-
     // (Opcional) 🔎 Viewer / PACS
     Route::get('/portal/resultados/{gestion}/viewer', [ResultadosController::class, 'viewer'])
         ->whereNumber('gestion')
         ->name('portal.resultados.viewer');
-    // Ej: /portal/resultados/152/viewer
-
-    // 📅 Citas médicas
-    Route::get('/portal/citas', [CitasController::class, 'index'])->name('portal.citas.index');
-    // Ej: /portal/citas
-
-    // 📋 licencias médicas
-    Route::get('/portal/licencias', [LicenciasController::class, 'index'])->name('portal.licencias.index');
-    // Ej: /portal/licencias
-
-    // 💊 Recetas médicas
-    Route::get('/portal/recetas', [RecetasController::class, 'index'])->name('portal.recetas.index');
-    // Ej: /portal/recetas
-    Route::post('/portal/controles/store', [ControlesController::class, 'store'])->name('portal.controles.store');
+// 📅 Citas médicas
+Route::get('/portal/citas', [CitasController::class, 'index'])->name('portal.citas.index');
+// 📋 licencias médicas
+Route::get('/portal/licencias', [LicenciasController::class, 'index'])->name('portal.licencias.index');
+// 💊 Recetas médicas
+Route::get('/portal/recetas', [RecetasController::class, 'index'])->name('portal.recetas.index');
+// Ej: /portal/recetas
+Route::post('/portal/controles/store', [ControlesController::class, 'store'])->name('portal.controles.store');
 
 Route::post('/password/update', [UserPasswordController::class, 'update'])->name('password.update');
-//rutas admin
 
-
-
-
-// PORTAL (público/pacientes)
 Route::get('/portal/noticias', [PortalNoticiasController::class, 'index'])->name('portal.noticias.index');
 Route::get('/portal/noticias/{id}', [PortalNoticiasController::class, 'show'])->name('portal.noticias.show');
-
-
 Route::post('/reviews', [ReviewsController::class, 'store'])->name('reviews.store');
-});
+// ==============================
+// PÁGINAS DE VALIDACIÓN (portal)
+// ==============================
+Route::get('/validacion/sin-validacion', [SinValidacionController::class, 'index'])->name('validacion.sin');
+Route::get('/validacion/numero-caso', [NumeroCasoController::class, 'index'])->name('validacion.caso');
+Route::post('/validacion/procesar', [NumeroCasoController::class, 'procesar'])->name('validacion.procesar');
+Route::get('/validacion/tres-opciones', [TresOpcionesController::class, 'index'])->name('validacion.tres');
+Route::get('/validacion/crear-cuenta', [CrearCuentaController::class, 'index'])->name('validacion.cuenta');
+Route::post('/validacion/crear-cuenta', [CrearCuentaController::class, 'store'])->name('validacion.cuenta.store');
+Route::post('/validacion/cuenta/codigo', [CrearCuentaController::class, 'enviarCodigo'])->name('validacion.cuenta.codigo');
+Route::post('/validacion/cuenta', [CrearCuentaController::class, 'store'])->name('validacion.cuenta.store');
 
+
+
+// Público JSON para el modal
+Route::get('/assistant/list', [\App\Http\Controllers\Portal\AssistantPublicController::class, 'list'])->name('portal.assistant.list');
+
+});
 /*
 |--------------------------------------------------------------------------
 | Página principal pública
@@ -241,5 +233,25 @@ Route::get('/admin/tickets', [SoporteController::class, 'index'])->name('admin.t
 Route::get('/admin/tickets/{ticket}',   [SoporteController::class, 'show'])->name('admin.tickets.show');
 Route::patch('/admin/tickets/{ticket}/resolve', [SoporteController::class, 'resolve'])->name('admin.tickets.resolve');
 Route::get('/admin/reviews', [ReviewsAdminController::class, 'index'])->name('admin.reviews.index');
- Route::get('/reviews/{review}', [ReviewsController::class, 'show'])->name('admin.reviews.show');
+Route::get('/reviews/{review}', [ReviewsController::class, 'show'])->name('admin.reviews.show');
+
+// ==============================
+// ADMIN — configuración de modos
+// ==============================
+Route::get('/admin/validacion/modos', [ValidacionController::class, 'index'])
+    ->name('admin.validacion.modos');
+
+Route::post('/admin/validacion/modos', [ValidacionController::class, 'guardar'])
+    ->name('admin.validacion.modos.guardar');
+// ==============================
+// ADMIN — Asistente virtual
+// ==============================
+
+ Route::get('/assistant-rules',                 [\App\Http\Controllers\Admin\AssistantRuleController::class, 'index'])->name('admin.assistant_rules.index');
+    Route::get('/assistant-rules/create',          [\App\Http\Controllers\Admin\AssistantRuleController::class, 'create'])->name('admin.assistant_rules.create');
+    Route::post('/assistant-rules',                [\App\Http\Controllers\Admin\AssistantRuleController::class, 'store'])->name('admin.assistant_rules.store');
+    Route::get('/assistant-rules/{assistant_rule}/edit', [\App\Http\Controllers\Admin\AssistantRuleController::class, 'edit'])->name('admin.assistant_rules.edit');
+    Route::put('/assistant-rules/{assistant_rule}',      [\App\Http\Controllers\Admin\AssistantRuleController::class, 'update'])->name('admin.assistant_rules.update');
+    Route::delete('/assistant-rules/{assistant_rule}',   [\App\Http\Controllers\Admin\AssistantRuleController::class, 'destroy'])->name('admin.assistant_rules.destroy');
+    Route::patch('/assistant-rules/{assistant_rule}/toggle', [\App\Http\Controllers\Admin\AssistantRuleController::class, 'toggle'])->name('admin.assistant_rules.toggle');
 });
