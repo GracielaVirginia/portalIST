@@ -42,11 +42,8 @@
       <h2 class="text-base sm:text-lg font-semibold text-gray-900 dark:text-gray-100">
         Mis resultados
       </h2>
-      <a href="{{ route('portal.home') }}"
-         class="inline-flex items-center rounded-xl border border-gray-200 dark:border-gray-700 px-3 py-1.5 text-sm
-                text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-900">
-        Volver
-      </a>
+        <x-ui.back-button :href="route('portal.home')" label="Volver" variant="outline" size="sm" class="mr-4" />
+
     </div>
   </div>
 
@@ -138,16 +135,23 @@
                 </span>
               </div>
 
-              <div class="mt-4 flex items-center gap-3">
-                <div class="h-12 w-12 rounded-lg bg-purple-100 dark:bg-purple-900/30 grid place-items-center shrink-0">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 text-purple-900 dark:text-purple-200" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M21 19V5a2 2 0 0 0-2-2H5C3.89 3 3 3.9 3 5v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2zM5 5h14v10.59l-3.29-3.3a1 1 0 0 0-1.42 0L11 19l-2.29-2.29a1 1 0 0 0-1.42 0L5 17.99V5z"/>
-                  </svg>
-                </div>
-                <div class="text-sm text-teal-700 dark:text-teal-300 font-medium">
-                  Ver resultado
-                </div>
-              </div>
+      @if(!empty($it['viewer_url']))
+        <div class="mt-4 flex items-center gap-3">
+          <div class="h-12 w-12 rounded-lg bg-purple-100 dark:bg-purple-900/30 grid place-items-center shrink-0">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 text-purple-900 dark:text-purple-200" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M21 19V5a2 2 0 0 0-2-2H5C3.89 3 3 3.9 3 5v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2zM7 17l3-4 2 3 3-4 2 5H7z"/>
+            </svg>
+          </div>
+          <a href="{{ $it['viewer_url'] }}" target="_blank" rel="noopener"
+             class="text-sm font-medium text-teal-700 dark:text-teal-300 hover:underline inline-flex items-center gap-1">
+            Ver resultado
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 opacity-70" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M14 3h7v7h-2V6.41l-9.29 9.3-1.42-1.42 9.3-9.29H14V3z"/>
+              <path d="M5 5h5V3H5a2 2 0 0 0-2 2v14c0 1.11.89 2 2 2h14a2 2 0 0 0 2-2v-5h-2v5H5V5z"/>
+            </svg>
+          </a>
+        </div>
+      @endif
 
               <div class="mt-4 flex items-center gap-2">
                 @if(!empty($it['pdf']))

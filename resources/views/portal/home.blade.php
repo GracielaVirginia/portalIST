@@ -23,7 +23,11 @@
     <x-security.force-password-modal />
 @endif
 {{-- Popup de valoración --}}
-@include('components.review-popup')    {{-- Header paciente --}}
+{{-- @include('components.review-popup') --}}
+@include('components.calificacion')
+
+{{-- Header paciente --}}
+
     <x-portal.panel-header :paciente="$paciente" onOrganizar="{{ route('portal.home') }}#organizar" />
 
     {{-- KPIs (informativos) --}}
@@ -38,7 +42,7 @@
         <x-portal.sidebar :resultados="$sidebar['resultados']" />
 
         {{-- CTAs morados (abren modales) --}}
-        <div class="rounded-2xl bg-purple-100 dark:bg-purple-900/30 border border-purple-200/60 dark:border-purple-800/50 p-3">
+        {{-- <div class="rounded-2xl bg-purple-100 dark:bg-purple-900/30 border border-purple-200/60 dark:border-purple-800/50 p-3">
           <button type="button"
                   @click="modalResultados = true"
                   class="w-full text-left group cursor-pointer rounded-xl px-3 py-2
@@ -50,9 +54,9 @@
             </span>
             <span class="rounded-lg bg-purple-900 text-white text-[11px] px-2 py-0.5">Abrir</span>
           </button>
-        </div>
+        </div>--}}
 
-        <div class="rounded-2xl bg-purple-100 dark:bg-purple-900/30 border border-purple-200/60 dark:border-purple-800/50 p-3">
+        {{-- <div class="rounded-2xl bg-purple-100 dark:bg-purple-900/30 border border-purple-200/60 dark:border-purple-800/50 p-3">
           <button type="button"
                   @click="modalSalud = true"
                   class="w-full text-left group cursor-pointer rounded-xl px-3 py-2
@@ -60,11 +64,11 @@
                          hover:bg-purple-900 hover:text-white transition inline-flex items-center justify-between">
             <span class="inline-flex items-center gap-2">
               <span class="h-2 w-2 rounded-full bg-purple-700 group-hover:bg-white"></span>
-              Ver calendario y sugerencias
+              Mis Controles (Glucosa-Tensión-Peso)
             </span>
             <span class="rounded-lg bg-purple-900 text-white text-[11px] px-2 py-0.5">Abrir</span>
           </button>
-        </div>
+        </div>  --}}
       </div>
 
       {{-- Contenido principal (derecha) --}}
@@ -78,10 +82,10 @@
 
         {{-- IMPORTANTE: ocultamos del flujo normal los otros widgets para evitar scroll --}}
         {{-- <x-portal.widget-resultados-recientes :items="$itemsRecientes" /> --}}
-        {{-- <div class="grid grid-cols-1 xl:grid-cols-2 gap-4">
-             <x-portal.widget-calendario-salud :series="$seriesControles" :store-url="route('portal.controles.store')" />
-             <x-portal.widget-sugerencias-citas :sugerencias="$sugerencias" />
-           </div> --}}
+        {{-- <div class="grid grid-cols-1 xl:grid-cols-2 gap-4">--}}
+             {{-- <x-portal.widget-calendario-salud :series="$seriesControles" :store-url="route('portal.controles.store')" /> --}}
+             {{-- <x-portal.widget-sugerencias-citas :sugerencias="$sugerencias" /> --}}
+           </div> 
       </div>
     </div>
 
@@ -119,10 +123,10 @@
           <button class="rounded-lg px-2 py-1 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
                   @click="modalSalud=false">Cerrar</button>
         </div>
-        <div class="p-4 grid grid-cols-1 xl:grid-cols-2 gap-4">
+        {{-- <div class="p-4 grid grid-cols-1 xl:grid-cols-2 gap-4">
           <x-portal.widget-calendario-salud :series="$seriesControles" :store-url="route('portal.controles.store')" />
           <x-portal.widget-sugerencias-citas :sugerencias="$sugerencias" />
-        </div>
+        </div> 
       </div>
     </div>
     {{-- =============== /MODALES =============== --}}

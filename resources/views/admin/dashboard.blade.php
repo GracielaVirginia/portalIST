@@ -1,8 +1,8 @@
-@extends('layouts.app')
+@extends('layouts.admin')
 
 @section('title', 'Admin — Dashboard')
 
-@section('content')
+@section('admin')
     <x-admin.layout title="Dashboard">
         {{-- 🟣 Topbar --}}
         <x-slot:topbar>

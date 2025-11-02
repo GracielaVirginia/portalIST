@@ -1,16 +1,18 @@
-{{-- resources/views/components/review-popup.blade.php (o incrústalo en la vista que quieras) --}}
+{{-- resources/views/components/review-popup.blade.php --}}
 @if (auth()->check() && !(auth()->user()->review || \App\Models\Review::where('user_id', auth()->id())->exists()))
 <div
   x-data="reviewPopup()"
   x-init="init()"
   x-cloak
-  class="fixed inset-0 z-50"
+  @keydown.escape.window="closePopup()"
+  :class="open ? 'fixed inset-0 z-50' : ''"   {{-- ← solo cubre pantalla cuando open=true --}}
 >
   <!-- Fondo -->
   <div x-show="open" x-transition.opacity class="absolute inset-0 bg-black/40 backdrop-blur-sm"></div>
 
   <!-- Modal -->
   <div x-show="open" x-transition
+       x-trap.noscroll="open"
        class="relative z-10 flex items-center justify-center p-4 min-h-screen">
     <div class="w-full max-w-md rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 shadow-lg overflow-hidden">
       <!-- Encabezado -->
@@ -74,7 +76,6 @@
   </div>
 </div>
 
-{{-- Alpine helper --}}
 <script>
   function reviewPopup() {
     return {
@@ -86,6 +87,9 @@
       submitting: false,
 
       init() {
+        // Evitar mostrar de nuevo si ya lo cerró (opcional)
+        if (localStorage.getItem('review_popup_closed') === '1') return;
+
         setTimeout(() => { this.open = true; }, 10000); // abre a los 10s
       },
       setRating(star) {
@@ -94,7 +98,6 @@
       },
       async submitReview() {
         if (this.rating < 1) {
-          // Puedes usar SweetAlert si ya lo tienes cargado
           alert('Por favor, selecciona una calificación.');
           return;
         }
@@ -118,11 +121,9 @@
             throw new Error(err.message || 'No se pudo enviar la calificación.');
           }
 
-          // OK
           this.open = false;
-
-          // Opcional: recargar o actualizar la UI (por ejemplo, ocultar para siempre)
-          // location.reload();
+          localStorage.setItem('review_popup_closed', '1');
+          // location.reload(); // si quieres reflejar cambios
         } catch (e) {
           alert(e.message || 'Error de conexión. Intenta más tarde.');
         } finally {
@@ -131,6 +132,7 @@
       },
       closePopup() {
         this.open = false;
+        localStorage.setItem('review_popup_closed', '1');
       }
     }
   }

@@ -46,7 +46,7 @@ console.log('[chart] módulo cargado, Chart.js =', Chart?.version);
                     labels,
                     datasets: [
                         {
-                            label: 'Exámenes realizados',
+                            label: 'Pacientes con Examen',
                             data: dataExamenes,
                             backgroundColor: '#16a34a', // verde
                             stack: 'stack1'

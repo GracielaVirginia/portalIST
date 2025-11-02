@@ -34,7 +34,7 @@
       {{-- Exámenes realizados --}}
       <div class="bg-white dark:bg-slate-800 shadow-lg p-6 rounded-lg">
           <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100">
-              Exámenes realizados
+              Pacientes con Examen
           </h3>
           <p id="cardExamenesRealizados"
              class="text-2xl font-bold text-indigo-700 dark:text-indigo-300">0</p>

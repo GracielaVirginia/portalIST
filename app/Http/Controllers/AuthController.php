@@ -9,14 +9,19 @@ use App\Models\GestionSaludCompleta;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use App\Models\PortalValidacionConfig; 
-
+use App\Models\Image;
 class AuthController extends Controller
 {
     // GET /login
-    public function showLoginForm()
-    {
-        return view('auth.login');
-    }
+public function showLoginForm()
+{
+    $seleccionada = Image::where('seleccionada', true)->first();
+    $imagenLoginUrl = $seleccionada
+        ? asset('images/' . $seleccionada->nombre)
+        : asset('images/bg-purple.png'); // fallback
+
+    return view('auth.login', compact('imagenLoginUrl'));
+}
 
     // POST /login
     public function login(Request $request)
@@ -179,7 +184,7 @@ return redirect()->route('portal.home')
             $request->session()->invalidate();
             $request->session()->regenerateToken();
 
-            return redirect()->route('welcome')->with('success', 'Sesión cerrada correctamente.');
+            return redirect()->route('login')->with('success', 'Sesión cerrada correctamente.');
         }
 
         return back()->with('warning', 'Aún no has iniciado sesión.');

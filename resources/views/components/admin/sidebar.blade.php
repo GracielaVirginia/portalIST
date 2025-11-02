@@ -65,8 +65,7 @@
 
                 {{-- Usuarios (con submenú) --}}
                 <div class="relative group/usuarios">
-                    <a href="{{ route('admin.users.index') }}"
-                        class="{{ $linkBase }} {{ $linkText }} {{ $linkHover }}">
+                    <a href="" class="{{ $linkBase }} {{ $linkText }} {{ $linkHover }}">
                         <span class="inline-flex items-center gap-2">
                             <span class="{{ $dotBase }}"></span>
                             <span class="pl-1">👤 Usuarios</span>
@@ -175,14 +174,21 @@
                                     Ver Reviews
                                 </span>
                             </a>
+                            <a href="{{ route('admin.config.home') }}"
+                                class="{{ $linkBase }} {{ $linkText }} hover:bg-purple-900 dark:hover:bg-purple-800 hover:text-white">
+                                <span class="inline-flex items-center gap-2">
+                                    <span class="h-2 w-2 rounded-full bg-purple-700 group-hover:bg-white"></span>
+                                    Configuraciones en el Login (imagen y seccion(tres cards o banner))
+                                </span>
+                            </a>
+                            <a href="{{ route('admin.promociones.index') }}"
+                                class="{{ $linkBase }} {{ $linkText }} hover:bg-purple-900 dark:hover:bg-purple-800 hover:text-white">
+                                <span class="inline-flex items-center gap-2">
+                                    <span class="h-2 w-2 rounded-full bg-purple-700 group-hover:bg-white"></span>
+                                    Promociones en el banner
+                                </span>
+                            </a>
                             {{-- <a href=""
-                 class="{{ $linkBase }} {{ $linkText }} hover:bg-purple-900 dark:hover:bg-purple-800 hover:text-white">
-                <span class="inline-flex items-center gap-2">
-                  <span class="h-2 w-2 rounded-full bg-purple-700 group-hover:bg-white"></span>
-                  Tipos de gestión
-                </span>
-              </a>
-              <a href=""
                  class="{{ $linkBase }} {{ $linkText }} hover:bg-purple-900 dark:hover:bg-purple-800 hover:text-white">
                 <span class="inline-flex items-center gap-2">
                   <span class="h-2 w-2 rounded-full bg-purple-700 group-hover:bg-white"></span>

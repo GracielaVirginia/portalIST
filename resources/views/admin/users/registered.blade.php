@@ -4,13 +4,11 @@
 
 @section('content')
 <div class="px-6 py-6">
-  <a href="{{ route('admin.dashboard') }}"
-   class="inline-flex items-center gap-2 bg-purple-900 text-white text-sm font-semibold px-4 py-2 rounded-full shadow-sm hover:bg-purple-800 hover:shadow-md transition">
-  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-    <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
-  </svg>
-  Volver al dashboard
-</a>
+  <x-admin.nav-actions
+    backHref="{{ route('admin.dashboard') }}"
+    logoutRoute="admin.logout"
+    variant="inline"   {{-- o "sticky" si la tabla es larga --}}
+  />
   <h1 class="text-2xl font-bold text-purple-700 dark:text-purple-200 mb-4">👤 Usuarios registrados</h1>
 
   <div class="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-4 shadow-sm">

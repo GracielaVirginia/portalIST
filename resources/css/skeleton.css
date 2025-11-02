@@ -1,0 +1,32 @@
+/* Efecto de carga gris con animación de brillo */
+.skeleton {
+    position: relative;
+    overflow: hidden;
+    border-radius: 8px;
+    background: linear-gradient(90deg,
+            #e5e7eb 0%,
+            #f3f4f6 50%,
+            #e5e7eb 100%);
+    background-size: 200% 100%;
+    animation: skeleton-wave 1.2s ease-in-out infinite;
+}
+
+/* Modo oscuro */
+.dark .skeleton {
+    background: linear-gradient(90deg,
+            #374151 0%,
+            #4b5563 50%,
+            #374151 100%);
+    background-size: 200% 100%;
+}
+
+/* Animación suave que recorre la barra */
+@keyframes skeleton-wave {
+    0% {
+        background-position: 200% 0;
+    }
+
+    100% {
+        background-position: -200% 0;
+    }
+}

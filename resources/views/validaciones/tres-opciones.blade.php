@@ -7,7 +7,7 @@
   <div class="w-full max-w-5xl mx-auto px-6 py-8">
     {{-- Header: logo + título --}}
     <div class="flex items-center justify-center mb-4">
-      <img src="{{ asset('images/logo.png') }}" alt="Logo" class="w-20 h-20 object-contain">
+      <img src="{{ asset('favicon.ico') }}" alt="Logo" class="w-20 h-20 object-contain">
     </div>
     <h1 class="text-2xl font-bold text-purple-800 dark:text-white text-center">Validación</h1>
     <p class="text-sm text-purple-700/80 dark:text-gray-300 text-center">Portal Pacientes</p>

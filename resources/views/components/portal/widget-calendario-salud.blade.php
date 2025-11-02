@@ -8,7 +8,7 @@
    * ]
    */
   'series' => ['tension'=>[], 'glucosa'=>[], 'peso'=>[]],
-  // URL (web) para POST de una nueva medición. Ej: route('portal.controles.store')
+  // (Ya no se usa para guardar — se mantienen por compatibilidad)
   'storeUrl' => '#',
   // Título del widget
   'titulo' => 'Controles de salud',
@@ -22,7 +22,7 @@
 <section
   x-data="calendarioSalud(@js($series))"
   x-init="init()"
-  class="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-sm"
+  class="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-sm"
 >
   {{-- Header --}}
   <header class="flex items-center justify-between px-4 sm:px-5 py-3 border-b border-gray-200 dark:border-gray-700">
@@ -69,7 +69,8 @@
   {{-- Grilla de días --}}
   <div class="grid grid-cols-7 gap-px border-b border-gray-200 dark:border-gray-700 bg-gray-200 dark:bg-gray-700">
     <template x-for="day in days" :key="day.key">
-      <div class="relative min-h-[92px] bg-white dark:bg-gray-900 p-2">
+      <div class="relative min-h-[92px] bg-white dark:bg-gray-900 p-2"
+           :class="day.isPast ? 'opacity-60' : ''">
         {{-- Número de día --}}
         <div class="flex items-center justify-between">
           <div class="text-xs font-semibold" :class="day.inMonth ? 'text-gray-800 dark:text-gray-100' : 'text-gray-400 dark:text-gray-500'">
@@ -80,7 +81,7 @@
           </div>
         </div>
 
-        {{-- Badges de mediciones (UNA sola class, sin style inline) --}}
+        {{-- Badges de mediciones --}}
         <div class="mt-2 space-y-1">
           <template x-if="day.data.tension">
             <div class="flex items-center justify-between text-[11px] rounded-md px-1.5 py-0.5 border border-purple-900/30
@@ -109,8 +110,12 @@
 
         {{-- Botón agregar --}}
         <div class="absolute bottom-1 right-1">
-          <button type="button" @click="openModal(day.date)"
-                  class="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-950 hover:bg-gray-50 dark:hover:bg-gray-900
+          <button type="button"
+                  @click="!day.isPast && openModal(day.date)"
+                  :class="day.isPast
+                    ? 'opacity-40 pointer-events-none cursor-not-allowed'
+                    : 'hover:bg-gray-50 dark:hover:bg-gray-900'"
+                  class="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-950
                          text-xs px-2 py-1 text-gray-700 dark:text-gray-200">
             Agregar
           </button>
@@ -121,14 +126,14 @@
 
   {{-- Modal para registrar medición --}}
   <div x-show="modal.open" x-transition x-cloak
-       class="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4">
+       class="fixed inset-0 z-[60] bg-black/40 backdrop-blur-sm flex items-center justify-center p-4">
     <div @click.outside="closeModal()"
-         class="w-full max-w-md rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-5 shadow-xl">
+         class="w-full max-w-md rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-5 shadow-2xl ring-1 ring-black/5">
       <h4 class="text-base font-semibold text-gray-900 dark:text-gray-100">
         Registrar control — <span x-text="modal.dateLabel"></span>
       </h4>
 
-      <form method="POST" action="{{ $storeUrl }}" class="mt-4 space-y-3">
+      <form x-ref="form" method="POST" action="{{ $storeUrl }}" class="mt-4 space-y-3">
         @csrf
         <input type="hidden" name="fecha" :value="modal.dateIso">
 
@@ -138,10 +143,14 @@
             <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Tensión (mmHg)</label>
             <div class="flex items-center gap-2">
               <input type="number" name="tension_sistolica" min="50" max="250" placeholder="Sist."
-                     class="w-full rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-950 text-sm"
+                     class="w-full rounded-lg border border-gray-300 dark:border-gray-600
+                            bg-white dark:bg-gray-950 text-sm text-gray-800 dark:text-gray-100
+                            focus:outline-none focus:ring-2 focus:ring-purple-400/60"
                      x-model.number="form.tension_sis">
               <input type="number" name="tension_diastolica" min="30" max="150" placeholder="Diast."
-                     class="w-full rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-950 text-sm"
+                     class="w-full rounded-lg border border-gray-300 dark:border-gray-600
+                            bg-white dark:bg-gray-950 text-sm text-gray-800 dark:text-gray-100
+                            focus:outline-none focus:ring-2 focus:ring-purple-400/60"
                      x-model.number="form.tension_dia">
             </div>
           </div>
@@ -150,7 +159,9 @@
           <div>
             <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Glucosa (mg/dL)</label>
             <input type="number" name="glucosa" min="40" max="600" placeholder="Ej: 110"
-                   class="w-full rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-950 text-sm"
+                   class="w-full rounded-lg border border-gray-300 dark:border-gray-600
+                          bg-white dark:bg-gray-950 text-sm text-gray-800 dark:text-gray-100
+                          focus:outline-none focus:ring-2 focus:ring-purple-400/60"
                    x-model.number="form.glucosa">
           </div>
 
@@ -158,7 +169,9 @@
           <div>
             <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Peso (kg)</label>
             <input type="number" step="0.1" min="20" max="400" name="peso" placeholder="Ej: 78.4"
-                   class="w-full rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-950 text-sm"
+                   class="w-full rounded-lg border border-gray-300 dark:border-gray-600
+                          bg-white dark:bg-gray-950 text-sm text-gray-800 dark:text-gray-100
+                          focus:outline-none focus:ring-2 focus:ring-purple-400/60"
                    x-model.number="form.peso">
           </div>
 
@@ -166,18 +179,37 @@
           <div>
             <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Notas</label>
             <input type="text" name="nota" maxlength="120" placeholder="Opcional"
-                   class="w-full rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-950 text-sm"
+                   class="w-full rounded-lg border border-gray-300 dark:border-gray-600
+                          bg-white dark:bg-gray-950 text-sm text-gray-800 dark:text-gray-100
+                          focus:outline-none focus:ring-2 focus:ring-purple-400/60"
                    x-model="form.nota">
           </div>
         </div>
 
-        <div class="mt-4 flex items-center justify-end gap-2">
-          <button type="button" @click="closeModal()"
-                  class="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-950 hover:bg-gray-50 dark:hover:bg-gray-900
-                         px-3 py-1.5 text-sm text-gray-700 dark:text-gray-200">Cancelar</button>
+        {{-- Botones guardar (rutas separadas) --}}
+        <div class="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-2">
           <button type="submit"
-                  class="rounded-xl border border-purple-900/20 dark:border-purple-300/20 bg-purple-900 text-white px-4 py-2 text-sm font-semibold hover:opacity-90">
-            Guardar
+                  @click.prevent="$refs.form.action='{{ route('controles.tension.store') }}'; $refs.form.submit();"
+                  class="rounded-xl bg-purple-900 text-white px-3 py-2 text-sm font-semibold hover:opacity-90">
+            Guardar tensión
+          </button>
+          <button type="submit"
+                  @click.prevent="$refs.form.action='{{ route('controles.glucosa.store') }}'; $refs.form.submit();"
+                  class="rounded-xl bg-emerald-600 text-white px-3 py-2 text-sm font-semibold hover:opacity-90">
+            Guardar glucosa
+          </button>
+          <button type="submit"
+                  @click.prevent="$refs.form.action='{{ route('controles.peso.store') }}'; $refs.form.submit();"
+                  class="rounded-xl bg-sky-600 text-white px-3 py-2 text-sm font-semibold hover:opacity-90">
+            Guardar peso
+          </button>
+        </div>
+
+        <div class="mt-2 text-right">
+          <button type="button" @click="closeModal()"
+                  class="rounded-xl border border-gray-200 dark:border-gray-700
+                         bg-white dark:bg-gray-950 px-3 py-1.5 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-900">
+            Cerrar
           </button>
         </div>
       </form>
@@ -197,14 +229,22 @@
       modal: { open: false, dateIso: '', dateLabel: '' },
       form: { tension_sis: null, tension_dia: null, glucosa: null, peso: null, nota: '' },
 
+      // etiqueta de mes
       get monthLabel() {
         return this.cursor.toLocaleDateString('es-CL', { month: 'long', year: 'numeric' });
+      },
+
+      // normalizar a YYYY-MM-DD (sin hora)
+      toIso(d){
+        const d0 = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+        return d0.toISOString().slice(0,10);
       },
 
       init() {
         // Normaliza series por fecha (último valor del día)
         const map = {};
-        const iso = d => (new Date(d)).toISOString().slice(0,10);
+        const iso = (d) => (new Date(d)).toISOString().slice(0,10);
+
         (initialSeries.tension || []).forEach(r => {
           const k = iso(r.fecha);
           map[k] = map[k] || {};
@@ -220,6 +260,7 @@
           map[k] = map[k] || {};
           map[k].peso = { valor: Number(r.valor) };
         });
+
         this.dataByDate = map;
         this.build();
       },
@@ -228,29 +269,31 @@
         const year = this.cursor.getFullYear();
         const month = this.cursor.getMonth(); // 0..11
         const first = new Date(year, month, 1);
-        // lunes=0 ... domingo=6
-        const startIdx = (first.getDay() + 6) % 7;
+        const startIdx = (first.getDay() + 6) % 7; // lunes=0 ... domingo=6
         const daysInMonth = new Date(year, month + 1, 0).getDate();
+        const todayIso = this.toIso(this.today);
 
         const cells = [];
         for (let i = 0; i < startIdx; i++) {
           const d = new Date(year, month, -startIdx + i + 1);
-          cells.push(this.makeCell(d, false));
+          cells.push(this.makeCell(d, false, todayIso));
         }
         for (let d = 1; d <= daysInMonth; d++) {
-          cells.push(this.makeCell(new Date(year, month, d), true));
+          cells.push(this.makeCell(new Date(year, month, d), true, todayIso));
         }
         while (cells.length % 7 !== 0) {
           const last = cells[cells.length - 1].date;
           const next = new Date(last.getFullYear(), last.getMonth(), last.getDate() + 1);
-          cells.push(this.makeCell(next, false));
+          cells.push(this.makeCell(next, false, todayIso));
         }
         this.days = cells;
       },
 
-      makeCell(date, inMonth) {
-        const key = date.toISOString().slice(0,10);
-        return { key: key + (inMonth ? '' : '-o'), date, inMonth, data: this.dataByDate[key] || {} };
+      makeCell(date, inMonth, todayIso) {
+        const key  = date.toISOString().slice(0,10);
+        const iso  = this.toIso(date);
+        const isPast = iso < todayIso; // pasado estrictamente menor que hoy
+        return { key: key + (inMonth ? '' : '-o'), date, inMonth, isPast, data: this.dataByDate[key] || {} };
       },
 
       isToday(d) {
@@ -266,9 +309,13 @@
 
       openModal(date) {
         const iso = date.toISOString().slice(0,10);
+        // Seguridad extra: bloquear si es pasado
+        if (this.toIso(date) < this.toIso(this.today)) return;
+
         this.modal.open = true;
         this.modal.dateIso = iso;
         this.modal.dateLabel = date.toLocaleDateString('es-CL', { day: '2-digit', month: 'short', year: 'numeric' });
+
         const d = this.dataByDate[iso] || {};
         this.form.tension_sis = d.tension?.sistolica ?? null;
         this.form.tension_dia = d.tension?.diastolica ?? null;
@@ -276,6 +323,7 @@
         this.form.peso        = d.peso?.valor ?? null;
         this.form.nota        = '';
       },
+
       closeModal() { this.modal.open = false; },
     }
   }

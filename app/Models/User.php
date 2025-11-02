@@ -36,6 +36,7 @@ class User extends Authenticatable
         'is_validated',
         'theme',
         'added',
+        'activo',
         'email_verified_at',
     ];
 
@@ -85,4 +86,9 @@ class User extends Authenticatable
     {
         return $this->is_blocked || $this->failed_login_attempts >= 3;
     }
+    // app/Models/User.php
+public function bloodPressures() { return $this->hasMany(\App\Models\BloodPressure::class); }
+public function glucoseReadings(){ return $this->hasMany(\App\Models\GlucoseReading::class); }
+public function weightEntries()  { return $this->hasMany(\App\Models\WeightEntry::class); }
+
 }

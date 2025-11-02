@@ -51,7 +51,7 @@ class AdminPatientsController extends Controller
         $user->failed_login_attempts =0;
         $user->failed_validated_attempts = 0;
         $user->is_validated = 0;
-        $user->force_password_change = 1;
+        $user->password_needs_change = 1;
         $user->blocked_at  = null;
         $user->save();
 

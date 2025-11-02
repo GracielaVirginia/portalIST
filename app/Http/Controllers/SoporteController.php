@@ -36,10 +36,10 @@ class SoporteController extends Controller
         $ticket = TicketSoporte::create($data);
 
         // Enviar notificación al administrador (ejemplo)
-        Mail::raw("Nuevo ticket recibido de {$ticket->email}\n\n{$ticket->detalle}", function($msg) use ($ticket) {
-            $msg->to('admin@tuportal.cl')
-                ->subject('Nuevo ticket de soporte #' . $ticket->id);
-        });
+        // Mail::raw("Nuevo ticket recibido de {$ticket->email}\n\n{$ticket->detalle}", function($msg) use ($ticket) {
+        //     $msg->to('admin@tuportal.cl')
+        //         ->subject('Nuevo ticket de soporte #' . $ticket->id);
+        // });
 
         return back()->with('success', 'Tu ticket fue enviado correctamente. Te contactaremos pronto.');
     }

@@ -28,6 +28,7 @@ return new class extends Migration
             $table->integer('failed_validated_attempts')->default(0);
             $table->string('theme', 20)->default('blue');
             $table->boolean('added')->default(false);
+            $table->boolean('activo')->default(false);
             $table->rememberToken();
             $table->timestamps();
         });

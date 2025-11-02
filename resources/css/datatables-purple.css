@@ -1,7 +1,8 @@
 /* ===========================
    Skin morado DataTables (Vite)
    Incluye: #tablaRegistrados, #tablaNoRegistrados, #tablaNoticias,
-   #tablaAdministradores, #tablaFaqs, #tablaTickets, #tablaReviews, #tablaRules
+   #tablaAdministradores, #tablaFaqs, #tablaTickets, #tablaReviews, #tablaRules,
+   #tablaPromociones, #tablaMedicoVirtual
    =========================== */
 
 /* ----- TABLAS: encabezados, filas, celdas ----- */
@@ -12,7 +13,9 @@
 #tablaFaqs thead th,
 #tablaTickets thead th,
 #tablaReviews thead th,
-#tablaRules thead th {
+#tablaRules thead th,
+#tablaPromociones thead th,
+#tablaMedicoVirtual thead th {
     border-bottom: 2px solid rgba(124, 58, 237, 0.35) !important;
     color: #5b21b6 !important;
     font-weight: 700 !important;
@@ -26,7 +29,9 @@
 #tablaFaqs tbody tr:hover,
 #tablaTickets tbody tr:hover,
 #tablaReviews tbody tr:hover,
-#tablaRules tbody tr:hover {
+#tablaRules tbody tr:hover,
+#tablaPromociones tbody tr:hover,
+#tablaMedicoVirtual tbody tr:hover {
     background-color: rgba(124, 58, 237, 0.08) !important;
     transition: background-color .2s ease !important;
 }
@@ -38,7 +43,9 @@
 #tablaFaqs tbody td,
 #tablaTickets tbody td,
 #tablaReviews tbody td,
-#tablaRules tbody td {
+#tablaRules tbody td,
+#tablaPromociones tbody td,
+#tablaMedicoVirtual tbody td {
     padding-top: 0.9rem !important;
     padding-bottom: 0.9rem !important;
     vertical-align: middle !important;
@@ -53,7 +60,9 @@
 #tablaFaqs tbody td:first-child,
 #tablaTickets tbody td:first-child,
 #tablaReviews tbody td:first-child,
-#tablaRules tbody td:first-child {
+#tablaRules tbody td:first-child,
+#tablaPromociones tbody td:first-child,
+#tablaMedicoVirtual tbody td:first-child {
     border-top-left-radius: .5rem !important;
     border-bottom-left-radius: .5rem !important;
 }
@@ -65,7 +74,9 @@
 #tablaFaqs tbody td:last-child,
 #tablaTickets tbody td:last-child,
 #tablaReviews tbody td:last-child,
-#tablaRules tbody td:last-child {
+#tablaRules tbody td:last-child,
+#tablaPromociones tbody td:last-child,
+#tablaMedicoVirtual tbody td:last-child {
     border-top-right-radius: .5rem !important;
     border-bottom-right-radius: .5rem !important;
 }
@@ -78,7 +89,9 @@
 #tablaFaqs_wrapper,
 #tablaTickets_wrapper,
 #tablaReviews_wrapper,
-#tablaRules_wrapper {
+#tablaRules_wrapper,
+#tablaPromociones_wrapper,
+#tablaMedicoVirtual_wrapper {
     font-size: 0.95rem !important;
     color: #1e1b4b !important;
 }
@@ -91,7 +104,9 @@
 #tablaFaqs_wrapper .dataTables_length,
 #tablaTickets_wrapper .dataTables_length,
 #tablaReviews_wrapper .dataTables_length,
-#tablaRules_wrapper .dataTables_length {
+#tablaRules_wrapper .dataTables_length,
+#tablaPromociones_wrapper .dataTables_length,
+#tablaMedicoVirtual_wrapper .dataTables_length {
     margin-bottom: .5rem !important;
 }
 
@@ -102,7 +117,9 @@
 #tablaFaqs_wrapper .dataTables_length select,
 #tablaTickets_wrapper .dataTables_length select,
 #tablaReviews_wrapper .dataTables_length select,
-#tablaRules_wrapper .dataTables_length select {
+#tablaRules_wrapper .dataTables_length select,
+#tablaPromociones_wrapper .dataTables_length select,
+#tablaMedicoVirtual_wrapper .dataTables_length select {
     background: #F3E8FF !important;
     color: #4c1d95 !important;
     border: 1px solid rgba(124, 58, 237, .35) !important;
@@ -120,7 +137,9 @@
 #tablaFaqs_filter,
 #tablaTickets_filter,
 #tablaReviews_filter,
-#tablaRules_filter {
+#tablaRules_filter,
+#tablaPromociones_filter,
+#tablaMedicoVirtual_filter {
     margin: .5rem 0 1rem 0 !important;
 }
 
@@ -131,7 +150,9 @@
 #tablaFaqs_filter label,
 #tablaTickets_filter label,
 #tablaReviews_filter label,
-#tablaRules_filter label {
+#tablaRules_filter label,
+#tablaPromociones_filter label,
+#tablaMedicoVirtual_filter label {
     display: flex !important;
     align-items: center !important;
     gap: .5rem !important;
@@ -148,7 +169,9 @@
 #tablaFaqs_filter label::before,
 #tablaTickets_filter label::before,
 #tablaReviews_filter label::before,
-#tablaRules_filter label::before {
+#tablaRules_filter label::before,
+#tablaPromociones_filter label::before,
+#tablaMedicoVirtual_filter label::before {
     content: 'Buscar' !important;
     font-size: .95rem !important;
     color: #6d28d9 !important;
@@ -162,7 +185,9 @@
 #tablaFaqs_filter>label>input[type=search],
 #tablaTickets_filter>label>input[type=search],
 #tablaReviews_filter>label>input[type=search],
-#tablaRules_filter>label>input[type=search] {
+#tablaRules_filter>label>input[type=search],
+#tablaPromociones_filter>label>input[type=search],
+#tablaMedicoVirtual_filter>label>input[type=search] {
     font-size: .95rem !important;
     background: #F3E8FF !important;
     color: #4c1d95 !important;
@@ -182,7 +207,9 @@
 #tablaFaqs_filter>label>input[type=search]:focus,
 #tablaTickets_filter>label>input[type=search]:focus,
 #tablaReviews_filter>label>input[type=search]:focus,
-#tablaRules_filter>label>input[type=search]:focus {
+#tablaRules_filter>label>input[type=search]:focus,
+#tablaPromociones_filter>label>input[type=search]:focus,
+#tablaMedicoVirtual_filter>label>input[type=search]:focus {
     border-color: #7e22ce !important;
     box-shadow: 0 0 0 2px rgba(126, 34, 206, .2) !important;
 }
@@ -194,7 +221,9 @@
 #tablaFaqs_filter>label>input[type=search]::placeholder,
 #tablaTickets_filter>label>input[type=search]::placeholder,
 #tablaReviews_filter>label>input[type=search]::placeholder,
-#tablaRules_filter>label>input[type=search]::placeholder {
+#tablaRules_filter>label>input[type=search]::placeholder,
+#tablaPromociones_filter>label>input[type=search]::placeholder,
+#tablaMedicoVirtual_filter>label>input[type=search]::placeholder {
     color: #6b21a8 !important;
     opacity: .8 !important;
 }
@@ -207,7 +236,9 @@
 #tablaFaqs_wrapper .dataTables_paginate,
 #tablaTickets_wrapper .dataTables_paginate,
 #tablaReviews_wrapper .dataTables_paginate,
-#tablaRules_wrapper .dataTables_paginate {
+#tablaRules_wrapper .dataTables_paginate,
+#tablaPromociones_wrapper .dataTables_paginate,
+#tablaMedicoVirtual_wrapper .dataTables_paginate {
     margin-top: 1rem !important;
     display: flex !important;
     gap: .4rem !important;
@@ -223,7 +254,9 @@
 #tablaFaqs_wrapper .dataTables_paginate .paginate_button,
 #tablaTickets_wrapper .dataTables_paginate .paginate_button,
 #tablaReviews_wrapper .dataTables_paginate .paginate_button,
-#tablaRules_wrapper .dataTables_paginate .paginate_button {
+#tablaRules_wrapper .dataTables_paginate .paginate_button,
+#tablaPromociones_wrapper .dataTables_paginate .paginate_button,
+#tablaMedicoVirtual_wrapper .dataTables_paginate .paginate_button {
     border: 1px solid rgba(124, 58, 237, .3) !important;
     background: #F3E8FF !important;
     color: #4c1d95 !important;
@@ -240,7 +273,9 @@
 #tablaFaqs_wrapper .dataTables_paginate .paginate_button:hover,
 #tablaTickets_wrapper .dataTables_paginate .paginate_button:hover,
 #tablaReviews_wrapper .dataTables_paginate .paginate_button:hover,
-#tablaRules_wrapper .dataTables_paginate .paginate_button:hover {
+#tablaRules_wrapper .dataTables_paginate .paginate_button:hover,
+#tablaPromociones_wrapper .dataTables_paginate .paginate_button:hover,
+#tablaMedicoVirtual_wrapper .dataTables_paginate .paginate_button:hover {
     background: #E9D5FF !important;
     color: #4c1d95 !important;
     transform: translateY(-1px) !important;
@@ -253,7 +288,9 @@
 #tablaFaqs_wrapper .dataTables_paginate .paginate_button.current,
 #tablaTickets_wrapper .dataTables_paginate .paginate_button.current,
 #tablaReviews_wrapper .dataTables_paginate .paginate_button.current,
-#tablaRules_wrapper .dataTables_paginate .paginate_button.current {
+#tablaRules_wrapper .dataTables_paginate .paginate_button.current,
+#tablaPromociones_wrapper .dataTables_paginate .paginate_button.current,
+#tablaMedicoVirtual_wrapper .dataTables_paginate .paginate_button.current {
     background: #6d28d9 !important;
     color: #fff !important;
     border-color: #6d28d9 !important;
@@ -267,7 +304,9 @@
 #tablaFaqs_wrapper .dataTables_paginate .paginate_button.disabled,
 #tablaTickets_wrapper .dataTables_paginate .paginate_button.disabled,
 #tablaReviews_wrapper .dataTables_paginate .paginate_button.disabled,
-#tablaRules_wrapper .dataTables_paginate .paginate_button.disabled {
+#tablaRules_wrapper .dataTables_paginate .paginate_button.disabled,
+#tablaPromociones_wrapper .dataTables_paginate .paginate_button.disabled,
+#tablaMedicoVirtual_wrapper .dataTables_paginate .paginate_button.disabled {
     opacity: .45 !important;
     cursor: not-allowed !important;
     box-shadow: none !important;
@@ -281,7 +320,9 @@
 #tablaFaqs_wrapper .btn-action,
 #tablaTickets_wrapper .btn-action,
 #tablaReviews_wrapper .btn-action,
-#tablaRules_wrapper .btn-action {
+#tablaRules_wrapper .btn-action,
+#tablaPromociones_wrapper .btn-action,
+#tablaMedicoVirtual_wrapper .btn-action {
     display: inline-flex !important;
     align-items: center !important;
     justify-content: center !important;
@@ -304,7 +345,9 @@
 #tablaFaqs_wrapper .btn-action:hover,
 #tablaTickets_wrapper .btn-action:hover,
 #tablaReviews_wrapper .btn-action:hover,
-#tablaRules_wrapper .btn-action:hover {
+#tablaRules_wrapper .btn-action:hover,
+#tablaPromociones_wrapper .btn-action:hover,
+#tablaMedicoVirtual_wrapper .btn-action:hover {
     background: #E9D5FF !important;
     transform: translateY(-1px) !important;
 }

@@ -47,7 +47,7 @@
          class="px-6 py-3 rounded-lg font-semibold text-white bg-purple-900 hover:bg-purple-800 shadow-md transition">
         Volver al login del Paciente
       </a>
-            <a href="{{ route('login-admin') }}"
+      <a href="{{ url('/login-admin') }}"
          class="px-6 py-3 rounded-lg font-semibold text-white bg-purple-900 hover:bg-purple-800 shadow-md transition">
         Volver al login del Administrador
       </a>

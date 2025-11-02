@@ -7,9 +7,10 @@
   <link rel="icon" type="image/png" href="{{ asset('favicon.ico') }}" />
 
   <title>@yield('title', 'Portal Pacientes')</title>
-
-  {{-- Tailwind v4 (ya contiene tus tokens y temas) --}}
-@vite(['resources/css/app.css', 'resources/js/app.js'])
+{{-- Overlay del skeleton de carga entre páginas --}}
+<x-ui.skeleton-overlay />
+  {{-- Tailwind v4 --}}
+  @vite(['resources/css/app.css', 'resources/js/app.js'])
 
   {{-- Aplicar modo oscuro temprano --}}
   <script>
@@ -29,159 +30,268 @@
 </head>
 
 <body class="min-h-screen transition-colors duration-300" data-color="purple">
-  <div class="min-h-screen flex flex-col">
+<div class="min-h-screen flex flex-col" x-data="{ helpOpen:false, openManual:false, openVideo:false, openFaq:false }">
   @include('components.dark-toggle')
 
-    <main id="content" class="flex-grow">
-      {{-- ===== Flash messages (autocierra en 3s) ===== --}}
-@foreach (['success' => ['green','✅'], 'error' => ['red','❌'], 'warning' => ['yellow','⚠️'], 'info' => ['sky','ℹ️']] as $key => [$color, $icon])
-  @if (session($key))
-    <div class="max-w-4xl mx-auto mt-4 mb-6 px-4"
-         x-data="{ show: true }"
-         x-init="setTimeout(() => show = false, 3000)">
-      <div x-show="show"
-           x-transition.opacity.duration.300ms
-           role="alert"
-           class="rounded-xl border border-{{ $color }}-300 dark:border-{{ $color }}-700
-                  bg-{{ $color }}-50 dark:bg-{{ $color }}-900/30
-                  text-{{ $color }}-800 dark:text-{{ $color }}-200
-                  px-4 py-3 font-semibold shadow-sm">
-        {{ $icon }} {{ session($key) }}
-      </div>
-    </div>
-  @endif
-@endforeach
+  {{-- ===== Flash messages ===== --}}
+  <div
+    class="fixed top-4 left-1/2 -translate-x-1/2 z-50 w-full max-w-4xl px-4 pointer-events-none"
+    aria-live="polite" aria-atomic="true">
+    @foreach (['success' => ['green','✅'], 'error' => ['red','❌'], 'warning' => ['yellow','⚠️'], 'info' => ['sky','ℹ️']] as $key => [$color, $icon])
+      @if (session($key))
+        <div class="mb-3 pointer-events-auto"
+             x-data="{ show: true }"
+             x-init="setTimeout(() => show = false, 3000)">
+          <div x-show="show"
+               x-transition.opacity.duration.300ms
+               role="alert"
+               class="rounded-xl border border-{{ $color }}-300 dark:border-{{ $color }}-700
+                      bg-{{ $color }}-50 dark:bg-{{ $color }}-900/30
+                      text-{{ $color }}-800 dark:text-{{ $color }}-200
+                      px-4 py-3 font-semibold shadow-sm">
+            {{ $icon }} {{ session($key) }}
+          </div>
+        </div>
+      @endif
+    @endforeach
+  </div>
 
-      @yield('content')
-    </main>
+  <main id="content" class="flex-grow">
+    @yield('content')
+  </main>
 
   {{-- ===== Footer ===== --}}
-<footer class="fixed bottom-0 left-0 w-full z-40">
-  <div class="mx-auto max-w-7xl px-4 py-3
-              flex flex-col sm:flex-row items-center justify-center sm:justify-between gap-2
-              bg-purple-100/90 dark:bg-gray-900/90 backdrop-blur
-              border-t border-purple-200/60 dark:border-gray-800
-              text-purple-900 dark:text-gray-200">
+  <footer class="fixed bottom-0 left-0 w-full z-40">
+    <div class="mx-auto max-w-7xl px-4 py-3
+                flex flex-col sm:flex-row items-center justify-center sm:justify-between gap-2
+                bg-purple-100/90 dark:bg-gray-900/90 backdrop-blur
+                border-t border-purple-200/60 dark:border-gray-800
+                text-purple-900 dark:text-gray-200">
 
-    <p class="text-sm">
-      Versión 3.0.0 · &copy; {{ date('Y') }} Todos los derechos reservados.
-    </p>
+      <p class="text-sm">
+        Versión 3.0.0 · &copy; {{ date('Y') }} Todos los derechos reservados.
+      </p>
 
-    <div class="flex items-center gap-3">
-      {{-- Ayuda (va a tu formulario de soporte) --}}
-      <a href="{{ route('soporte.create') }}"
-         class="inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-sm font-semibold
-                bg-white text-purple-900 border border-purple-200
-                hover:bg-purple-50 hover:border-purple-300
-                dark:bg-gray-800 dark:text-gray-100 dark:border-gray-700 dark:hover:bg-gray-700">
-        <span aria-hidden="true">🛈</span>
-        <span>Ayuda</span>
-      </a>
+      <div class="flex items-center gap-3">
+        {{-- Ayuda (abre modal) --}}
+        <a href="#"
+           @click.prevent="helpOpen = true"
+           class="inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-sm font-semibold
+                  bg-white text-purple-900 border border-purple-200
+                  hover:bg-purple-50 hover:border-purple-300
+                  dark:bg-gray-800 dark:text-gray-100 dark:border-gray-700 dark:hover:bg-gray-700">
+          <span aria-hidden="true">🛈</span>
+          <span>Ayuda</span>
+        </a>
+      </div>
+    </div>
+  </footer>
 
-      {{-- FAQ: abre el modal del chat-box (evento global) --}}
-<footer class="fixed bottom-0 left-0 w-full z-40">
-  <div class="mx-auto max-w-7xl px-4 py-3
-              flex flex-col sm:flex-row items-center justify-center sm:justify-between gap-2
-              bg-purple-100/90 dark:bg-gray-900/90 backdrop-blur
-              border-t border-purple-200/60 dark:border-gray-800
-              text-purple-900 dark:text-gray-200">
+  {{-- Mantengo tus componentes --}}
+  <x-portal.assistant-bot />
+  {{-- @include('components.portal.chat-box') --}}
 
-    <p class="text-sm">
-      Versión 3.0.0 · &copy; {{ date('Y') }} Todos los derechos reservados.
-    </p>
+  {{-- ===== Modal: Centro de ayuda ===== --}}
+  <div
+    x-show="helpOpen"
+    x-transition.opacity
+    x-cloak
+    class="fixed inset-0 z-50 flex items-center justify-center"
+    @keydown.escape.window="helpOpen=false"
+  >
+    <div class="absolute inset-0 bg-black/50" @click="helpOpen=false"></div>
+    <div
+      class="relative bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100
+             rounded-2xl shadow-xl p-8 w-full max-w-sm text-center"
+    >
+      <h2 class="text-xl font-bold mb-6">Centro de ayuda</h2>
 
-    <div class="flex items-center gap-3">
-      {{-- Ayuda (formulario de soporte) --}}
-      <a href="{{ route('soporte.create') }}"
-         class="inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-sm font-semibold
-                bg-white text-purple-900 border border-purple-200
-                hover:bg-purple-50 hover:border-purple-300
-                dark:bg-gray-800 dark:text-gray-100 dark:border-gray-700 dark:hover:bg-gray-700">
-        <span aria-hidden="true">🛈</span>
-        <span>Ayuda</span>
-      </a>
-<x-portal.assistant-bot />
-@include('components.portal.chat-box')
-
-
+      <ul class="space-y-3 text-sm">
+        <li>
+          <a href="#"
+             @click.prevent="openManual = true; helpOpen = false"
+             class="block rounded-lg border border-purple-200 dark:border-gray-700 p-3 hover:bg-purple-50 dark:hover:bg-gray-800 font-medium">
+            📘 Manual de ayuda
+          </a>
+        </li>
+        <li>
+          <a href="#"
+             @click.prevent="openVideo = true; helpOpen = false"
+             class="block rounded-lg border border-purple-200 dark:border-gray-700 p-3 hover:bg-purple-50 dark:hover:bg-gray-800 font-medium">
+            🎥 Video de ayuda
+          </a>
+        </li>
+        <li>
+          <a href="{{ route('soporte.create') }}"
+             class="block rounded-lg border border-purple-200 dark:border-gray-700 p-3 hover:bg-purple-50 dark:hover:bg-gray-800 font-medium">
+            📨 Enviar ticket
+          </a>
+        </li>
+        <li>
+          <a href="#"
+             @click.prevent="openFaq = true; helpOpen = false"
+             class="block rounded-lg border border-purple-200 dark:border-gray-700 p-3 hover:bg-purple-50 dark:hover:bg-gray-800 font-medium">
+            ❓ Preguntas frecuentes
+          </a>
+        </li>
+      </ul>
     </div>
   </div>
-</footer>
 
-
-
-
-
+  <!-- ===== Modal MANUAL ===== -->
+  <div x-show="openManual" x-cloak
+       class="fixed inset-0 z-[60] bg-black/50 backdrop-blur-sm flex items-center justify-center p-4"
+       @keydown.escape.window="openManual=false"
+       x-transition.opacity>
+    <div class="w-full max-w-5xl rounded-2xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 shadow-xl overflow-hidden">
+      <div class="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-700">
+        <h3 class="text-base font-semibold text-gray-900 dark:text-gray-100">Manual del usuario</h3>
+        <button class="rounded-lg px-2 py-1 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
+                @click="openManual=false">Cerrar</button>
+      </div>
+      <div class="p-0">
+        <iframe src="{{ asset('manual/manual-usuario.pdf') }}"
+                class="w-full h-[70vh]" title="Manual del usuario"></iframe>
+      </div>
+    </div>
   </div>
+
+  <!-- ===== Modal VIDEO ===== -->
+  <div x-show="openVideo" x-cloak
+       class="fixed inset-0 z-[60] bg-black/50 backdrop-blur-sm flex items-center justify-center p-4"
+       @keydown.escape.window="openVideo=false"
+       x-transition.opacity>
+    <div class="w-full max-w-4xl rounded-2xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 shadow-xl overflow-hidden">
+      <div class="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-700">
+        <h3 class="text-base font-semibold text-gray-900 dark:text-gray-100">Video tutorial</h3>
+        <button class="rounded-lg px-2 py-1 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
+                @click="openVideo=false">Cerrar</button>
+      </div>
+      <div class="p-0">
+        <video controls class="w-full h-[60vh] object-contain bg-black">
+          <source src="{{ asset('videos/tutorial.mp4') }}" type="video/mp4">
+          Tu navegador no soporta video HTML5.
+        </video>
+      </div>
+    </div>
   </div>
-  @include('components.help-panel')
-  {{-- Componentes flotantes --}}
-  {{-- @include('components.theme-selector')  --}} {{-- eliminado: quitamos el componente de temas --}}
-  {{-- @include('components.portal.chat-box') --}}
+
+  <!-- ===== Modal FAQ ===== -->
+  <div
+    x-show="openFaq"
+    x-cloak
+    class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-[60]"
+    @keydown.escape.window="openFaq=false"
+    x-transition.opacity
+  >
+    <div class="w-full max-w-md rounded-2xl bg-white dark:bg-gray-900 shadow-2xl overflow-hidden border border-gray-200 dark:border-gray-700">
+      {{-- Header --}}
+      <div class="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-700">
+        <h3 class="text-base font-semibold text-purple-900 dark:text-gray-100">Preguntas Frecuentes</h3>
+        <button @click="openFaq=false" class="text-gray-600 dark:text-gray-300 hover:text-purple-700 dark:hover:text-gray-100">✕</button>
+      </div>
+
+      {{-- Contenido dinámico --}}
+      <div
+        x-data="{
+          q: '', items: [],
+          async load() {
+            try {
+              const res = await fetch('{{ route('portal.faqs.list') }}?q=' + encodeURIComponent(this.q));
+              const json = await res.json();
+              this.items = json.ok ? (json.items || []) : [];
+            } catch (_) { this.items = []; }
+          }
+        }"
+        x-init="load()"
+        class="p-4 space-y-3 h-[70vh] overflow-y-auto">
+
+        {{-- Campo de búsqueda --}}
+        <input type="search"
+              x-model="q"
+              @input.debounce.300ms="load()"
+              placeholder="Buscar preguntas..."
+              class="w-full rounded-lg border-gray-300 dark:bg-gray-800 dark:border-gray-700 text-sm px-3 py-2">
+
+        {{-- Listado --}}
+        <template x-for="it in items" :key="it.id">
+          <details class="rounded-lg border border-gray-200 dark:border-gray-700 p-3">
+            <summary class="font-medium cursor-pointer text-purple-900 dark:text-gray-100" x-text="it.question"></summary>
+            <div class="mt-2 text-sm text-gray-700 dark:text-gray-300" x-text="it.answer"></div>
+          </details>
+        </template>
+
+        {{-- Sin resultados --}}
+        <div x-show="items.length===0" class="text-sm text-gray-500 text-center">Sin resultados</div>
+      </div>
+    </div>
+  </div>
+
+</div> {{-- <-- AQUÍ recién cerramos el contenedor con x-data --}}
 <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
-  {{-- ==== Núcleo del Tema ==== --}}
-  <script>
-    // --- Oscuro / Claro ---
-    function getCurrentDark() {
-      if ('theme' in localStorage) return localStorage.theme === 'dark';
-      return window.matchMedia('(prefers-color-scheme: dark)').matches;
-    }
 
-    function applyDarkMode(isDark) {
-      document.documentElement.classList.toggle('dark', isDark);
-      localStorage.theme = isDark ? 'dark' : 'light';
+{{-- ==== Núcleo del Tema ==== --}}
+<script>
+  function getCurrentDark() {
+    if ('theme' in localStorage) return localStorage.theme === 'dark';
+    return window.matchMedia('(prefers-color-scheme: dark)').matches;
+  }
+  function applyDarkMode(isDark) {
+    document.documentElement.classList.toggle('dark', isDark);
+    localStorage.theme = isDark ? 'dark' : 'light';
+  }
+  function toggleDark() { applyDarkMode(!getCurrentDark()); }
+  function applyColorTheme(name) {
+    const enforced = 'purple';
+    document.body.setAttribute('data-color', enforced);
+    localStorage.setItem('colorTheme', enforced);
+  }
+  function changeTheme(name) {
+    if (!getCurrentDark()) applyColorTheme('purple');
+  }
+  document.addEventListener('DOMContentLoaded', () => {
+    const dark = getCurrentDark();
+    applyDarkMode(dark);
+    if (!dark) applyColorTheme('purple');
+    document.getElementById('floatingDarkToggle')?.addEventListener('click', toggleDark);
+  });
+  window.changeTheme = changeTheme;
+</script>
+{{-- Script que activa el skeleton al navegar --}}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const overlay = document.getElementById('pageSkeletonOverlay');
+  if (!overlay) return;
 
-      // Si existiera el panel antiguo, lo ocultamos en oscuro (no rompe si no está)
-      const panel = document.getElementById('themePanel');
-      if (panel) panel.classList.toggle('hidden', isDark);
-    }
+  const show = () => {
+    overlay.classList.remove('hidden');
+    overlay.classList.add('flex');
+  };
 
-    function toggleDark() {
-      applyDarkMode(!getCurrentDark());
-    }
+  // ✅ Mostrar skeleton al hacer clic en cualquier enlace interno
+  document.addEventListener('click', (e) => {
+    const link = e.target.closest('a');
+    if (!link) return;
 
-    // --- Colores de Marca ---
-    // Mantenemos la firma y el nombre para no romper nada,
-    // pero forzamos SIEMPRE 'purple' en claro y no hacemos cambios en oscuro.
-    function applyColorTheme(name) {
-      const rootEl = document.body;
-      const enforced = 'purple';
-      rootEl.setAttribute('data-color', enforced);
-      localStorage.setItem('colorTheme', enforced);
+    const url = link.getAttribute('href') || '';
+    if (!url || url.startsWith('#') || link.target === '_blank' || link.hasAttribute('download')) return;
 
-      // Si quedara algún botón del panel previo, marcamos 'purple' como activo sin error
-      const panel = document.getElementById('themePanel');
-      if (panel) {
-        panel.querySelectorAll('.theme-option').forEach(btn => {
-          const active = btn.getAttribute('data-color') === enforced;
-          btn.classList.toggle('ring-2', active);
-          btn.classList.toggle('ring-offset-2', active);
-          btn.classList.toggle('ring-primary', active);
-        });
-      }
-    }
+    // Solo para enlaces dentro del mismo sitio (no externos)
+    const dest = new URL(url, location.href);
+    if (dest.origin !== location.origin) return;
 
-    function changeTheme(name) {
-      // Conservamos la API pública, pero no cambiamos el color en oscuro
-      if (!getCurrentDark()) applyColorTheme('purple');
-    }
+    show();
+  });
 
-    // --- Inicialización ---
-    document.addEventListener('DOMContentLoaded', () => {
-      const dark = getCurrentDark();
-      applyDarkMode(dark);
+  // ✅ Si vuelve con el botón “atrás” del navegador, ocultar skeleton
+  window.addEventListener('pageshow', () => {
+    overlay.classList.add('hidden');
+    overlay.classList.remove('flex');
+  });
+});
+</script>
 
-      // Forzar purple en claro SIEMPRE
-      if (!dark) applyColorTheme('purple');
-
-      document.getElementById('floatingDarkToggle')?.addEventListener('click', toggleDark);
-    });
-
-    // Exportar globalmente (se mantienen los nombres)
-    window.changeTheme = changeTheme;
-  </script>
-
-  <script src="{{ asset('js/app.js') }}"></script>
-  @stack('scripts')
+<script src="{{ asset('js/app.js') }}"></script>
+@stack('scripts')
 </body>
 </html>

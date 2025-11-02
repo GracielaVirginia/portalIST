@@ -24,6 +24,10 @@ public function run(): void
         EspecialidadSeeder::class,
         ExamenNombreSeeder::class,
         PortalValidacionConfigSeeder::class,
+        SystemSettingsSeeder::class,
+        ImagesSeeder::class,
+        PortalSectionsSeeder::class,
+        PromocionesSeeder::class,
         ]);
 }
 

@@ -32,7 +32,12 @@ class PacienteController extends Controller
             ->where('numero_documento', $rut)
             ->orderBy('created_at', 'asc')
             ->first();
-
+        if ($paciente) {
+        $usuario = User::where('rut', $rut)->first();
+        if ($usuario && $usuario->is_blocked) {
+          return response()->json(['exists' => false, 'bloqueado' => true, 'message' => 'Paciente Bloqueado. Comunicate con el Administrador']);
+        }
+    }
         if (!$paciente) {
             Log::channel('daily')->warning('[VERIFICAR RUT] Paciente NO encontrado ❌', ['rut' => $rut]);
             return response()->json(['exists' => false, 'message' => 'Paciente no registrado.']);
@@ -45,6 +50,7 @@ class PacienteController extends Controller
             Log::channel('daily')->warning('[VERIFICAR RUT] Usuario bloqueado 🚫', [
                 'rut' => $rut,
                 'blocked_at' => $usuario->blocked_at,
+                
             ]);
 
             return response()->json([

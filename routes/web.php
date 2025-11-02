@@ -34,8 +34,18 @@ use App\Http\Controllers\Validaciones\SinValidacionController;
 use App\Http\Controllers\Validaciones\NumeroCasoController;
 use App\Http\Controllers\Validaciones\TresOpcionesController;
 use App\Http\Controllers\Validaciones\CrearCuentaController;
-
-
+use App\Http\Controllers\Auth\LogoutConfirmController;
+use App\Http\Controllers\Admin\HomeSectionSettingsController;
+use App\Http\Controllers\Admin\ImageController;
+use App\Http\Controllers\PortalPageController;
+use App\Http\Controllers\Admin\PortalSectionController;
+use App\Http\Controllers\PortalPromocionesController;
+use App\Http\Controllers\Admin\PromocionController;
+use App\Http\Controllers\BloodPressureController;
+use App\Http\Controllers\GlucoseReadingController;
+use App\Http\Controllers\WeightEntryController;
+use App\Http\Controllers\ControlesReportController;
+use App\Http\Controllers\ControlesSeriesController;
 
 
 /*
@@ -54,7 +64,9 @@ Route::get('/ayuda/enviar', [SoporteController::class, 'create'])->name('soporte
 Route::post('/ayuda/enviar', [SoporteController::class, 'store'])->name('soporte.store');
 
 Route::post('/assistant/message', [\App\Http\Controllers\Assistant\ChatBotController::class, 'sendMessage'])->name('portal.assistant.message');
-});
+Route::get('/conoce-mas', [PortalPageController::class, 'conoceMas'])->name('portal.conoce-mas');});
+Route::get('/promociones', [PortalPromocionesController::class, 'index'])->name('portal.promociones');
+Route::get('/promociones/{promocion}', [PortalPromocionesController::class, 'show'])->name('portal.promociones.show');
 
 /*
 |--------------------------------------------------------------------------
@@ -62,7 +74,9 @@ Route::post('/assistant/message', [\App\Http\Controllers\Assistant\ChatBotContro
 |--------------------------------------------------------------------------
 */
     Route::middleware('auth')->group(function () {
-Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+// Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+Route::get('/logout/confirm', [LogoutConfirmController::class, 'show'])->name('logout.confirm');
+Route::post('/logout', [LogoutConfirmController::class, 'logout'])->name('logout'); // sobrescribe si hace falta
 Route::get('/clear-session', [ClearSessionController::class, 'clearSession'])->name('clear.session');
 Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
 Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
@@ -105,6 +119,7 @@ Route::post('/password/update', [UserPasswordController::class, 'update'])->name
 Route::get('/portal/noticias', [PortalNoticiasController::class, 'index'])->name('portal.noticias.index');
 Route::get('/portal/noticias/{id}', [PortalNoticiasController::class, 'show'])->name('portal.noticias.show');
 Route::post('/reviews', [ReviewsController::class, 'store'])->name('reviews.store');
+Route::patch('/reviews/me', [ReviewsController::class, 'updateMine'])->name('reviews.update.mine');
 // ==============================
 // PÁGINAS DE VALIDACIÓN (portal)
 // ==============================
@@ -112,6 +127,7 @@ Route::get('/validacion/sin-validacion', [SinValidacionController::class, 'index
 Route::get('/validacion/numero-caso', [NumeroCasoController::class, 'index'])->name('validacion.caso');
 Route::post('/validacion/procesar', [NumeroCasoController::class, 'procesar'])->name('validacion.procesar');
 Route::get('/validacion/tres-opciones', [TresOpcionesController::class, 'index'])->name('validacion.tres');
+Route::post('/validacion/verificar', [TresOpcionesController::class, 'verificarUsuario'])->name('verificar-usuario');
 Route::get('/validacion/crear-cuenta', [CrearCuentaController::class, 'index'])->name('validacion.cuenta');
 Route::post('/validacion/crear-cuenta', [CrearCuentaController::class, 'store'])->name('validacion.cuenta.store');
 Route::post('/validacion/cuenta/codigo', [CrearCuentaController::class, 'enviarCodigo'])->name('validacion.cuenta.codigo');
@@ -121,7 +137,15 @@ Route::post('/validacion/cuenta', [CrearCuentaController::class, 'store'])->name
 
 // Público JSON para el modal
 Route::get('/assistant/list', [\App\Http\Controllers\Portal\AssistantPublicController::class, 'list'])->name('portal.assistant.list');
+  Route::post('/controles/tension', [BloodPressureController::class, 'store'])->name('controles.tension.store');
+  Route::post('/controles/glucosa', [GlucoseReadingController::class, 'store'])->name('controles.glucosa.store');
+  Route::post('/controles/peso',    [WeightEntryController::class, 'store'])->name('controles.peso.store');
 
+  Route::get('/controles/series', [ControlesSeriesController::class, 'index'])->name('controles.series');
+  Route::post('/controles/pdf', [ControlesReportController::class, 'pdf'])->name('controles.pdf');
+
+    Route::get('/portal/citas',  [CitasController::class, 'index'])->name('portal.citas.index');
+    Route::post('/portal/citas', [CitasController::class, 'store'])->name('portal.citas.store');
 });
 /*
 |--------------------------------------------------------------------------
@@ -254,4 +278,28 @@ Route::post('/admin/validacion/modos', [ValidacionController::class, 'guardar'])
     Route::put('/assistant-rules/{assistant_rule}',      [\App\Http\Controllers\Admin\AssistantRuleController::class, 'update'])->name('admin.assistant_rules.update');
     Route::delete('/assistant-rules/{assistant_rule}',   [\App\Http\Controllers\Admin\AssistantRuleController::class, 'destroy'])->name('admin.assistant_rules.destroy');
     Route::patch('/assistant-rules/{assistant_rule}/toggle', [\App\Http\Controllers\Admin\AssistantRuleController::class, 'toggle'])->name('admin.assistant_rules.toggle');
-});
+Route::get('/admin/config-home', [HomeSectionSettingsController::class, 'edit'])->name('admin.config.home');
+Route::post('/admin/config-home', [HomeSectionSettingsController::class, 'update'])->name('admin.config.home.update');
+Route::get('/admin/images', [ImageController::class, 'index'])->name('admin.images.index');
+Route::post('/admin/images', [ImageController::class, 'store'])->name('admin.images.store');
+Route::delete('/admin/images/{image}', [ImageController::class, 'destroy'])->name('admin.images.destroy');
+
+Route::get   ('/admin/portal-sections',                [PortalSectionController::class, 'index'])->name('admin.portal.sections.index');
+Route::post  ('/admin/portal-sections',                [PortalSectionController::class, 'store'])->name('admin.portal.sections.store');
+Route::get   ('/admin/portal-sections/{section}/edit', [PortalSectionController::class, 'edit'])->name('admin.portal.sections.edit');
+Route::put   ('/admin/portal-sections/{section}',      [PortalSectionController::class, 'update'])->name('admin.portal.sections.update');
+Route::delete('/admin/portal-sections/{section}',      [PortalSectionController::class, 'destroy'])->name('admin.portal.sections.destroy');
+Route::patch ('/admin/portal-sections/{section}/toggle', [PortalSectionController::class, 'toggleVisible'])->name('admin.portal.sections.toggle');
+Route::patch ('/admin/portal-sections/reorder',          [PortalSectionController::class, 'reorder'])->name('admin.portal.sections.reorder');
+
+Route::get   ('/admin/promociones',                [PromocionController::class, 'index'])->name('admin.promociones.index');
+Route::get   ('/admin/promociones/create',         [PromocionController::class, 'create'])->name('admin.promociones.create');
+Route::post  ('/admin/promociones',                [PromocionController::class, 'store'])->name('admin.promociones.store');
+Route::get   ('/admin/promociones/{promocion}/edit',[PromocionController::class, 'edit'])->name('admin.promociones.edit');
+Route::put   ('/admin/promociones/{promocion}',    [PromocionController::class, 'update'])->name('admin.promociones.update');
+Route::delete('/admin/promociones/{promocion}',    [PromocionController::class, 'destroy'])->name('admin.promociones.destroy');
+Route::patch ('/admin/promociones/{promocion}/destacar', [PromocionController::class, 'destacar'])->name('admin.promociones.destacar');
+Route::patch ('/admin/promociones/{promocion}/toggle',   [PromocionController::class, 'toggle'])->name('admin.promociones.toggle');
+
+    
+    });

@@ -130,4 +130,24 @@ class CitasController extends Controller
             'tipos'          => ['CONTROL', 'PRIMERA', 'URGENCIA'],
         ]);
     }
+    public function store(Request $request)
+{
+    $data = $request->validate([
+        'fecha'       => ['required','date','after_or_equal:today'],
+        'hora'        => ['required'], // HH:MM
+        'motivo'      => ['required','string','max:120'],
+        'comentarios' => ['nullable','string','max:500'],
+    ]);
+
+    // TODO: guarda en tu tabla de citas; ej:
+    // Appointment::create([
+    //   'user_id' => $request->user()->id,
+    //   'fecha'   => $data['fecha'].' '.$data['hora'].':00',
+    //   'motivo'  => $data['motivo'],
+    //   'nota'    => $data['comentarios'],
+    // ]);
+
+    return back()->with('ok', 'Solicitud registrada. Te contactaremos para confirmar.');
+}
+
 }
