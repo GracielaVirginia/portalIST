@@ -57,6 +57,19 @@
   </div>
 
   <main id="content" class="flex-grow">
+    <button id="modoFacil" class="text-sm text-purple-700">Activar modo fácil</button>
+
+<script>
+document.getElementById('modoFacil').addEventListener('click', () => {
+  document.body.classList.toggle('modo-facil');
+});
+</script>
+
+<style>
+.modo-facil * { font-size: 1.25rem !important; }
+.modo-facil button, .modo-facil input { border-width: 3px; }
+.modo-facil { background-color: #fefefe; color: #111; }
+</style>
     @yield('content')
   </main>
 

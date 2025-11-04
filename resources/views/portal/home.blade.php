@@ -30,6 +30,7 @@
 
     <x-portal.panel-header :paciente="$paciente" onOrganizar="{{ route('portal.home') }}#organizar" />
 
+
     {{-- KPIs (informativos) --}}
     <div class="mt-6">
       <x-portal.kpis :kpis="$kpis" />

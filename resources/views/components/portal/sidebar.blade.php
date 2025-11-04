@@ -11,6 +11,18 @@
   $esp   = $resultados['por_especialidad'] ?? [];
 @endphp
 
+
+<style>
+@keyframes pulseShadow {
+  0% { box-shadow: 0 0 0 0 rgba(168, 85, 247, 0.6); }
+  70% { box-shadow: 0 0 0 10px rgba(168, 85, 247, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(168, 85, 247, 0); }
+}
+.animate-pulse-shadow {
+  animation: pulseShadow 2s infinite;
+  border-radius: 0.5rem;
+}
+</style>
 <aside class="w-full lg:w-64 shrink-0">
   <nav class="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-3 shadow-sm">
 
@@ -25,7 +37,7 @@
     </a>
 
     {{-- ================= RESULTADOS (FIJO) ================= --}}
-    <div class="mt-2">
+   <div class="mt-2">
       {{-- Encabezado fijo --}}
       <div class="flex items-center justify-between rounded-xl px-3 py-2 text-sm font-semibold
                   text-gray-900 dark:text-gray-100">
@@ -40,14 +52,13 @@
 
       {{-- Contenedor lila --}}
       <div class="ml-3 mt-1 rounded-xl bg-purple-100 dark:bg-purple-900/30 p-1.5 space-y-1">
-
         {{-- Ver todos --}}
         <a href="{{ route('ver-resultados') }}"
            class="group cursor-pointer flex items-center justify-between rounded-lg
                   px-3 py-2 text-xs font-medium
                   text-purple-900 dark:text-purple-100
                   hover:bg-purple-900 dark:hover:bg-purple-800 hover:text-white
-                  transition">
+                  transition border-2 border-purple-500 focus:outline-none rounded-lg px-3 py-2 animate-pulse-shadow">
           <span class="inline-flex items-center gap-2">
             <span class="h-2 w-2 rounded-full bg-purple-700 group-hover:bg-white"></span>
             <span class="pl-1">Ver todos</span>

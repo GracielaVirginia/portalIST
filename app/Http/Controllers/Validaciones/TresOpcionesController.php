@@ -6,14 +6,30 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Route;
 use App\Models\GestionSaludCompleta;
+use Carbon\Carbon;
 
 class TresOpcionesController extends Controller
 {
     /**
+     * Máximo de intentos antes de bloquear.
+     */
+    private int $maxIntentos = 3;
+
+    /**
+     * Destino en éxito (home del portal).
+     */
+    private function destinoExito(): string
+    {
+        // Pediste redirigir al home del portal
+        if (Route::has('portal.home')) return 'portal.home';
+        if (Route::has('ver-resultados')) return 'ver-resultados';
+        return 'portal.home';
+    }
+
+    /**
      * GET /validacion/tres-opciones
-     * Muestra la vista con las 3 opciones de validación.
-     * Toma teléfono, email y la lista de exámenes desde gestiones_salud_completa.
      */
     public function index()
     {
@@ -22,79 +38,64 @@ class TresOpcionesController extends Controller
         }
 
         $user = Auth::user();
-        $rut  = $user->username ?? $user->rut ?? $user->numero_documento ?? null;
 
-        // Traer todas las gestiones del paciente para armar opciones de examen
+        if (!empty($user->is_blocked)) {
+            return redirect()->route('login')->with('error_message', 'Tu cuenta está bloqueada. Comunícate con el administrador.');
+        }
+
+        // Inicializa intentos si viene null
+        if ($user->failed_validated_attempts === null) {
+            $user->failed_validated_attempts = $this->maxIntentos;
+            $user->save();
+        }
+
+        $rut = $user->username ?? $user->rut ?? $user->numero_documento ?? null;
+
         $gestiones = GestionSaludCompleta::query()
             ->when($rut, fn($q) => $q->where('numero_documento', $rut))
             ->orderByDesc('created_at')
             ->get();
 
-        // Tomar la gestión más reciente para teléfono/email
         $g = $gestiones->first();
 
-        // --- Teléfono (desde gestiones) ---
-        $celularRaw = $g->telefono ?? $g->celular ?? $user->celular ?? '';
-        $telefono   = preg_replace('/\D/u', '', (string) $celularRaw);
-        $telefono   = trim($telefono);
-        $telefono_valido = (strlen($telefono) === 9) && preg_match('/^\d{9}$/', $telefono);
-        $telefono_enmascarado = $telefono_valido
-            ? substr($telefono, 0, 1) . str_repeat('x', 7) . substr($telefono, -1)
-            : null;
+        // --- Teléfono ---
+        $celularRaw  = $g->telefono ?? $g->celular ?? $user->celular ?? '';
+        $telefono    = $this->soloDigitos($celularRaw);
+        $telefonoOk  = $this->esCelularCl($telefono);
+        $telefonoMask= $telefonoOk ? $this->maskTelefono($telefono) : null;
 
-        // --- Email (desde gestiones, si no está, desde user) ---
-        $email = $g->email ?? $user->email ?? '';
-        if (filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            [$local, $domain] = explode('@', $email, 2);
-            $email_enmascarado = substr($local, 0, 2) . str_repeat('*', max(strlen($local) - 2, 0)) . '@' . $domain;
-        } else {
-            $email_enmascarado = null;
-        }
+        // --- Email ---
+        $emailRaw    = $g->email ?? $user->email ?? '';
+        [$emailOk, $emailMask] = $this->maskEmail($emailRaw);
 
-        // --- Lista de exámenes (código + nombre) desde gestiones ---
-        // Intentamos detectar columnas típicas para código/nombre de examen.
-        $examCodeCandidates = ['cod_prestacion', 'codigo_examen', 'examen_codigo', 'codigo', 'codigo_prestacion'];
-        $examNameCandidates = ['nombre_prestacion', 'examen_nombre', 'prestacion', 'procedimiento', 'nombre'];
+        // --- Prestaciones (únicas) ---
+        [$prestaciones, $codigos] = $this->extraerPrestaciones($gestiones);
 
-        $pick = function ($row, array $cands) {
-            foreach ($cands as $c) {
-                if (isset($row->{$c}) && $row->{$c} !== null && $row->{$c} !== '') {
-                    return [$c, $row->{$c}];
-                }
-            }
-            return [null, null];
-        };
-
-        $prestaciones = [];
-        foreach ($gestiones as $row) {
-            [$codeCol, $codeVal] = $pick($row, $examCodeCandidates);
-            [$nameCol, $nameVal] = $pick($row, $examNameCandidates);
-            if ($codeVal) {
-                $prestaciones[$codeVal] = (object) [
-                    'codigo' => $codeVal,
-                    'nombre' => $nameVal ?: $codeVal,
-                ];
-            }
-        }
-        // Reindexar a lista
-        $prestaciones = array_values($prestaciones);
+        // Para depuración en la vista (si quieres renderizar lo que el paciente verá como opciones)
+        session()->flash('debug_validacion_index', [
+            'telefono_real'      => $telefonoOk ? $telefono : null,
+            'telefono_mask'      => $telefonoMask,
+            'email_real'         => $emailOk ? $emailRaw : null,
+            'email_mask'         => $emailMask,
+            'examenes_codigos'   => $codigos,
+            'intentos_restantes' => (int) $user->failed_validated_attempts,
+        ]);
 
         return view('validaciones.tres-opciones', [
             'user'                  => $user,
-            'telefono'              => $telefono_valido ? $telefono : null,
+            'telefono'              => $telefonoOk ? $telefono : null,
             'celular'               => $celularRaw,
-            'telefono_enmascarado'  => $telefono_enmascarado,
-            'telefono_valido'       => $telefono_valido,
-            'email'                 => $email,
-            'email_enmascarado'     => $email_enmascarado,
+            'telefono_enmascarado'  => $telefonoMask,
+            'telefono_valido'       => $telefonoOk,
+            'email'                 => $emailOk ? $emailRaw : null,
+            'email_enmascarado'     => $emailMask,
             'prestaciones'          => $prestaciones,
+            'intentos_restantes'    => (int) $user->failed_validated_attempts,
         ]);
     }
 
     /**
      * POST /verificar-usuario
-     * Procesa la validación: teléfono | email | examen
-     * Compara contra los datos de gestiones_salud_completa.
      */
     public function verificarUsuario(Request $request)
     {
@@ -103,7 +104,18 @@ class TresOpcionesController extends Controller
         }
 
         $user = Auth::user();
-        $rut  = $user->username ?? $user->rut ?? $user->numero_documento ?? null;
+
+        if (!empty($user->is_blocked)) {
+            return redirect()->route('login')->with('error_message', 'Tu cuenta está bloqueada. Comunícate con el administrador.');
+        }
+
+        // Inicializa intentos si viene null
+        if ($user->failed_validated_attempts === null) {
+            $user->failed_validated_attempts = $this->maxIntentos;
+            $user->save();
+        }
+
+        $rut = $user->username ?? $user->rut ?? $user->numero_documento ?? null;
 
         $data = $request->validate([
             'tipo_validacion' => 'required|in:telefono,email,examen',
@@ -115,120 +127,189 @@ class TresOpcionesController extends Controller
         $valor     = $data['valor'] ?? null;
         $examen_id = $data['examen_id'] ?? null;
 
-        Log::info('[validacion] tipo='.$tipo.' valor=' . ($valor ?? 'null') . ' examen_id=' . ($examen_id ?? 'null'));
-
-        // Control de intentos
-        if (($user->intentos_validacion ?? 0) <= 0) {
-            $user->bloqueado_validacion = true;
-            $user->save();
-            return redirect()->route('login')->with([
-                'error_message'  => 'Tu cuenta ha sido bloqueada. Comunícate con el administrador.',
-            ]);
-        }
-
-        // Cargar últimas gestiones del paciente
+        // Cargamos gestiones
         $gestiones = GestionSaludCompleta::query()
             ->when($rut, fn($q) => $q->where('numero_documento', $rut))
             ->orderByDesc('created_at')
             ->get();
 
         $g = $gestiones->first();
+
+        // Calculamos opciones actuales (para log y vista si falla)
+        $celularRaw   = $g->telefono ?? $g->celular ?? $user->celular ?? '';
+        $telefono     = $this->soloDigitos($celularRaw);
+        $telOk        = $this->esCelularCl($telefono);
+        $telMask      = $telOk ? $this->maskTelefono($telefono) : null;
+
+        $emailRaw     = $g->email ?? $user->email ?? '';
+        [$emailOk, $emailMask] = $this->maskEmail($emailRaw);
+
+        [$prestaciones, $codigos] = $this->extraerPrestaciones($gestiones);
+
+        // --- Validación real (acepta valor real o máscara que muestres en UI) ---
         $validado = false;
 
-        switch ($tipo) {
-            case 'telefono':
-                $celularRaw = $g->telefono ?? $g->celular ?? $user->celular ?? '';
-                $tel = preg_replace('/\D/u', '', (string) $celularRaw);
-                $tel = trim($tel);
-                $ok  = (strlen($tel) === 9) && preg_match('/^\d{9}$/', $tel);
-                $mask = $ok ? substr($tel, 0, 1) . str_repeat('x', 7) . substr($tel, -1) : null;
-                if ($mask && $valor && hash_equals($mask, $valor)) {
-                    $validado = true;
-                }
-                break;
-
-            case 'email':
-                $email = $g->email ?? $user->email ?? '';
-                if (filter_var($email, FILTER_VALIDATE_EMAIL)) {
-                    [$local, $domain] = explode('@', $email, 2);
-                    $mask = substr($local, 0, 2) . str_repeat('*', max(strlen($local) - 2, 0)) . '@' . $domain;
-                    if ($valor && hash_equals($mask, $valor)) {
-                        $validado = true;
-                    }
-                }
-                break;
-
-            case 'examen':
-                if (!empty($examen_id)) {
-                    // Detectar columnas posibles de "código de examen" en gestiones
-                    $examCodeCandidates = ['cod_prestacion', 'codigo_examen', 'examen_codigo', 'codigo', 'codigo_prestacion'];
-
-                    $existe = $gestiones->contains(function ($row) use ($examen_id, $examCodeCandidates) {
-                        foreach ($examCodeCandidates as $c) {
-                            if (isset($row->{$c}) && (string)$row->{$c} !== '') {
-                                if ((string)$row->{$c} === (string)$examen_id) {
-                                    return true;
-                                }
-                            }
-                        }
-                        return false;
-                    });
-
-                    if ($existe) {
-                        $validado = true;
-                    }
-                }
-                break;
+        if ($tipo === 'telefono') {
+            if ($telOk) {
+                // Acepta que el front envíe el teléfono real (9 dígitos) o la máscara
+                $matchReal  = ($valor !== null) && hash_equals($telefono, preg_replace('/\D/u', '', $valor));
+                $matchMask  = ($valor !== null) && hash_equals($telMask, $valor);
+                $validado = $matchReal || $matchMask;
+            }
+        } elseif ($tipo === 'email') {
+            if ($emailOk) {
+                // Acepta email real (case-insensitive) o máscara
+                $matchReal = ($valor !== null) && strcasecmp(trim($valor), trim($emailRaw)) === 0;
+                $matchMask = ($valor !== null) && hash_equals($emailMask, $valor);
+                $validado = $matchReal || $matchMask;
+            }
+        } elseif ($tipo === 'examen') {
+            if (!empty($examen_id)) {
+                $validado = in_array((string) $examen_id, $codigos, true);
+            }
         }
+
+        // ==== TRAZABILIDAD (SIEMPRE) ====
+        Log::info('[validacion.intentada]', [
+            'user_id'            => $user->id,
+            'tipo'               => $tipo,
+            'valor_enviado'      => $valor,
+            'examen_id_enviado'  => $examen_id,
+            'opciones' => [
+                'telefono_real'  => $telOk ? $telefono : null,
+                'telefono_mask'  => $telMask,
+                'email_real'     => $emailOk ? $emailRaw : null,
+                'email_mask'     => $emailMask,
+                'examenes'       => $codigos,
+            ],
+            'resultado'          => $validado ? 'OK' : 'FALLA',
+            'intentos_antes'     => (int) $user->failed_validated_attempts,
+        ]);
 
         if ($validado) {
-            $user->validado = true;
+            // Éxito: marcar validado y resetear intentos
+            $user->is_validated             = 1;
+            $user->failed_validated_attempts = $this->maxIntentos;
             $user->save();
-            return redirect()->route('ver-resultados')->with('success', 'Validación exitosa. Redirigiendo…');
+
+            return redirect()->route($this->destinoExito())
+                ->with('success', 'Validación exitosa. Redirigiendo…');
         }
 
-        // Fallo: descontar intento
-        $user->intentos_validacion = max(0, (int) $user->intentos_validacion - 1);
+        // FALLO: descontar 1 intento y decidir bloqueo
+        $user->failed_validated_attempts = max(0, (int) $user->failed_validated_attempts - 1);
         $user->save();
 
-        if (($user->intentos_validacion ?? 0) <= 0) {
-            $user->bloqueado_validacion = true;
-            $user->save();
-            return redirect()->route('login')->with([
-                'error_message'  => 'Tu cuenta ha sido bloqueada. Comunícate con el administrador.',
+        $intentosRestantes = (int) $user->failed_validated_attempts;
+
+        // Guardamos detalles para mostrarlos en la vista de error
+        session()->flash('debug_validacion', [
+            'tipo_elegido'       => $tipo,
+            'valor_enviado'      => $valor,
+            'examen_id_enviado'  => $examen_id,
+            'opciones_disponibles' => [
+                'telefono_real'  => $telOk ? $telefono : null,
+                'telefono_mask'  => $telMask,
+                'email_real'     => $emailOk ? $emailRaw : null,
+                'email_mask'     => $emailMask,
+                'examenes'       => $codigos,
+            ],
+            'intentos_restantes' => $intentosRestantes,
+        ]);
+
+        Log::warning('[validacion.fallo]', [
+            'user_id'            => $user->id,
+            'tipo'               => $tipo,
+            'valor_enviado'      => $valor,
+            'examen_id_enviado'  => $examen_id,
+            'intentos_restantes' => $intentosRestantes,
+        ]);
+
+        if ($intentosRestantes <= 0) {
+            $this->bloquearUsuario($user);
+            return redirect()->route('login')
+                ->with('error_message', 'Tu cuenta ha sido bloqueada. Comunícate con el administrador.');
+        }
+
+        // Volver con error y con las opciones reconstruidas
+        return back()
+            ->withErrors([
+                'validacion' => 'Datos incorrectos. Te quedan '.$intentosRestantes.' intento(s) antes de ser bloqueado.'
+            ])
+            ->withInput()
+            ->with([
+                'user'                  => $user,
+                'telefono'              => $telOk ? $telefono : null,
+                'celular'               => $celularRaw,
+                'telefono_enmascarado'  => $telMask,
+                'telefono_valido'       => $telOk,
+                'email'                 => $emailOk ? $emailRaw : null,
+                'email_enmascarado'     => $emailMask,
+                'prestaciones'          => $prestaciones,
+                'intentos_restantes'    => $intentosRestantes,
             ]);
+    }
+
+    /* ===========================
+     * Helpers
+     * ===========================
+     */
+
+    private function soloDigitos(?string $v): string
+    {
+        return trim(preg_replace('/\D/u', '', (string) ($v ?? '')));
+    }
+
+    /**
+     * Celular CL de 9 dígitos (sin +56).
+     */
+    private function esCelularCl(string $tel): bool
+    {
+        return (strlen($tel) === 9) && (bool) preg_match('/^\d{9}$/', $tel);
+    }
+
+    private function maskTelefono(string $tel): string
+    {
+        // 9 dígitos => 1er dígito + 7 x + último dígito
+        return substr($tel, 0, 1) . str_repeat('x', 7) . substr($tel, -1);
+    }
+
+    /**
+     * Devuelve [bool $valido, string|null $mask]
+     */
+    private function maskEmail(?string $email): array
+    {
+        $email = (string) ($email ?? '');
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            return [false, null];
         }
+        [$local, $domain] = explode('@', $email, 2);
+        $mask = substr($local, 0, 2) . str_repeat('*', max(strlen($local) - 2, 0)) . '@' . $domain;
+        return [true, $mask];
+    }
 
-        // Reconstruir datos para re-render con error
-        $celularRaw = $g->telefono ?? $g->celular ?? $user->celular ?? '';
-        $tel = preg_replace('/\D/u', '', (string) $celularRaw);
-        $tel = trim($tel);
-        $telOk = (strlen($tel) === 9) && preg_match('/^\d{9}$/', $tel);
-        $telMask = $telOk ? substr($tel, 0, 1) . str_repeat('x', 7) . substr($tel, -1) : null;
-
-        $email = $g->email ?? $user->email ?? '';
-        if (filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            [$local, $domain] = explode('@', $email, 2);
-            $emailMask = substr($local, 0, 2) . str_repeat('*', max(strlen($local) - 2, 0)) . '@' . $domain;
-        } else {
-            $emailMask = null;
-        }
-
-        // Reconstruir lista de prestaciones
+    /**
+     * Construye lista única de prestaciones desde gestiones.
+     * Retorna [array $prestacionesList, array $codigosList]
+     */
+    private function extraerPrestaciones($gestiones): array
+    {
         $examCodeCandidates = ['cod_prestacion', 'codigo_examen', 'examen_codigo', 'codigo', 'codigo_prestacion'];
         $examNameCandidates = ['nombre_prestacion', 'examen_nombre', 'prestacion', 'procedimiento', 'nombre'];
+
         $pick = function ($row, array $cands) {
             foreach ($cands as $c) {
                 if (isset($row->{$c}) && $row->{$c} !== null && $row->{$c} !== '') {
-                    return [$c, $row->{$c}];
+                    return (string) $row->{$c};
                 }
             }
-            return [null, null];
+            return null;
         };
+
         $prestaciones = [];
         foreach ($gestiones as $row) {
-            [$codeCol, $codeVal] = $pick($row, $examCodeCandidates);
-            [$nameCol, $nameVal] = $pick($row, $examNameCandidates);
+            $codeVal = $pick($row, $examCodeCandidates);
+            $nameVal = $pick($row, $examNameCandidates);
             if ($codeVal) {
                 $prestaciones[$codeVal] = (object) [
                     'codigo' => $codeVal,
@@ -236,20 +317,25 @@ class TresOpcionesController extends Controller
                 ];
             }
         }
-        $prestaciones = array_values($prestaciones);
 
-        return back()
-            ->withErrors(['validacion' => 'Datos incorrectos, te quedan: ' . $user->intentos_validacion . ' intento(s) antes de ser bloqueado.'])
-            ->withInput()
-            ->with([
-                'user'                  => $user,
-                'telefono'              => $telOk ? $tel : null,
-                'celular'               => $celularRaw,
-                'telefono_enmascarado'  => $telMask,
-                'telefono_valido'       => $telOk,
-                'email'                 => $email,
-                'email_enmascarado'     => $emailMask,
-                'prestaciones'          => $prestaciones,
-            ]);
+        $list  = array_values($prestaciones);
+        $codes = array_map(fn($o) => (string) $o->codigo, $list);
+
+        return [$list, $codes];
+    }
+
+    /**
+     * Bloquea al usuario y setea campos relacionados.
+     */
+    private function bloquearUsuario($user): void
+    {
+        $user->is_blocked = 1;
+        if (isset($user->blocked_at))            { $user->blocked_at = Carbon::now(); }
+        if (isset($user->failed_login_attempts)) { $user->failed_login_attempts = 0; }
+        if (isset($user->password_needs_change)) { $user->password_needs_change = 1; }
+        if (isset($user->is_validated))          { $user->is_validated = 0; }
+        $user->save();
+
+        Log::warning('[validacion.bloqueado]', ['user_id' => $user->id]);
     }
 }

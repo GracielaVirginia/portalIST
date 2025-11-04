@@ -53,6 +53,7 @@ class AdminPatientsController extends Controller
         $user->is_validated = 0;
         $user->password_needs_change = 1;
         $user->blocked_at  = null;
+        $user->failed_validated_attempts  = 0;
         $user->save();
 
         return response()->json(['ok'=>true]);

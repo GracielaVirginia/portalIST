@@ -28,6 +28,11 @@ public function run(): void
         ImagesSeeder::class,
         PortalSectionsSeeder::class,
         PromocionesSeeder::class,
+        TiposProfesionalesSeeder::class,
+        HorariosProfesionalesSeeder::class,
+        SucursalSeeder::class,
+        ProfesionalesSeeder::class,
+        HorariosSeeder::class,
         ]);
 }
 

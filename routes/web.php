@@ -46,6 +46,16 @@ use App\Http\Controllers\GlucoseReadingController;
 use App\Http\Controllers\WeightEntryController;
 use App\Http\Controllers\ControlesReportController;
 use App\Http\Controllers\ControlesSeriesController;
+use App\Http\Controllers\Admin\AdminGalenSupportController;
+use App\Http\Controllers\AgendaPacienteController;
+use App\Http\Controllers\TipoProfesionalController;
+use App\Http\Controllers\SucursalController;
+use App\Http\Controllers\ProfesionalController;
+use App\Http\Controllers\HorarioController;
+use App\Http\Controllers\BloqueoController;
+
+
+
 
 
 /*
@@ -64,9 +74,14 @@ Route::get('/ayuda/enviar', [SoporteController::class, 'create'])->name('soporte
 Route::post('/ayuda/enviar', [SoporteController::class, 'store'])->name('soporte.store');
 
 Route::post('/assistant/message', [\App\Http\Controllers\Assistant\ChatBotController::class, 'sendMessage'])->name('portal.assistant.message');
-Route::get('/conoce-mas', [PortalPageController::class, 'conoceMas'])->name('portal.conoce-mas');});
+Route::get('/conoce-mas', [PortalPageController::class, 'conoceMas'])->name('portal.conoce-mas');
 Route::get('/promociones', [PortalPromocionesController::class, 'index'])->name('portal.promociones');
 Route::get('/promociones/{promocion}', [PortalPromocionesController::class, 'show'])->name('portal.promociones.show');
+Route::post('/admin/support-tickets/galen', [AdminGalenSupportController::class, 'store'])
+    ->name('admin.support.galen.store');
+
+
+});
 
 /*
 |--------------------------------------------------------------------------
@@ -146,6 +161,18 @@ Route::get('/assistant/list', [\App\Http\Controllers\Portal\AssistantPublicContr
 
     Route::get('/portal/citas',  [CitasController::class, 'index'])->name('portal.citas.index');
     Route::post('/portal/citas', [CitasController::class, 'store'])->name('portal.citas.store');
+    Route::get ('/agenda',                      [AgendaPacienteController::class, 'index'])->name('agenda.index');
+    Route::get ('/agenda/medicos',              [AgendaPacienteController::class, 'apiMedicos'])->name('agenda.medicos');
+    Route::get ('/agenda/{id}/horarios',    [AgendaPacienteController::class, 'apiHorarios'])->name('agenda.horarios');
+    Route::get ('/agenda/{id}/eventos',     [AgendaPacienteController::class, 'apiEventos'])->name('agenda.eventos');
+    Route::post('/agenda/verificar',            [AgendaPacienteController::class, 'verificarDisponibilidad'])->name('agenda.verificar-disponibilidad');
+    Route::post('/agenda',                      [AgendaPacienteController::class, 'store'])->name('agenda.store');
+    Route::post('/agenda/{id}/bloquear',    [AgendaPacienteController::class, 'bloquearSlot'])->name('agenda.bloquear');
+    Route::post('/agenda/{id}/mover',           [AgendaPacienteController::class, 'mover'])->name('agenda.mover');
+    Route::post('/agenda/estado',               [AgendaPacienteController::class, 'cambiarEstado'])->name('agenda.cambiar-estado');
+
+
+
 });
 /*
 |--------------------------------------------------------------------------
@@ -182,6 +209,12 @@ Route::get('/users', [UserController::class, 'index'])->name('admin.users.index'
 // Registrados
 Route::get('/users/registered', [UserController::class, 'registered'])->name('admin.users.registered');
 Route::get('/users/registered/data', [UserController::class, 'registeredData'])->name('admin.users.registered.data');
+Route::patch('/users/{id}/toggle-active', [UserController::class, 'toggleActive'])
+    ->name('admin.users.toggle.active');
+Route::patch('/users/{id}/toggle-block', [UserController::class, 'toggleBlock'])
+    ->name('admin.users.toggle.block');
+Route::delete('/users/{id}', [UserController::class, 'destroy'])
+    ->name('admin.users.delete');
 Route::get('/admins', [AdminController::class, 'index'])->name('admin.admins.index');
 Route::get('/validations', [ValidationController::class, 'index'])->name('admin.validations.index');
 //no registrados
@@ -300,6 +333,45 @@ Route::put   ('/admin/promociones/{promocion}',    [PromocionController::class, 
 Route::delete('/admin/promociones/{promocion}',    [PromocionController::class, 'destroy'])->name('admin.promociones.destroy');
 Route::patch ('/admin/promociones/{promocion}/destacar', [PromocionController::class, 'destacar'])->name('admin.promociones.destacar');
 Route::patch ('/admin/promociones/{promocion}/toggle',   [PromocionController::class, 'toggle'])->name('admin.promociones.toggle');
+
+Route::get   ('/tipos-profesionales',                   [TipoProfesionalController::class, 'index'])->name('tipos.index');
+Route::post  ('/tipos-profesionales',                   [TipoProfesionalController::class, 'store'])->name('tipos.store');
+Route::put   ('/tipos-profesionales/{tipoProfesional}', [TipoProfesionalController::class, 'update'])->name('tipos.update');
+Route::delete('/tipos-profesionales/{tipoProfesional}', [TipoProfesionalController::class, 'destroy'])->name('tipos.destroy');
+Route::patch ('/tipos-profesionales/{tipoProfesional}/toggle', [TipoProfesionalController::class, 'toggle'])->name('tipos.toggle');
+Route::post  ('/tipos-profesionales/reorder',                  [TipoProfesionalController::class, 'reorder'])->name('tipos.reorder');
+Route::get('/tipos-profesionales/create', [TipoProfesionalController::class, 'create'])->name('tipos-profesionales.create');
+Route::get('/tipos-profesionales/{tipoProfesional}/edit', [TipoProfesionalController::class, 'edit'])->name('tipos-profesionales.edit');
+
+Route::get   ('/sucursales',                [SucursalController::class,'index'])->name('sucursales.index');
+Route::post  ('/sucursales',                [SucursalController::class,'store'])->name('sucursales.store');
+Route::put   ('/sucursales/{sucursal}',     [SucursalController::class,'update'])->name('sucursales.update');
+Route::delete('/sucursales/{sucursal}',     [SucursalController::class,'destroy'])->name('sucursales.destroy');
+Route::patch ('/sucursales/{sucursal}/toggle', [SucursalController::class,'toggle'])->name('sucursales.toggle');
+Route::post  ('/sucursales/reorder',           [SucursalController::class,'reorder'])->name('sucursales.reorder');
+Route::get   ('/sucursales/create',           [SucursalController::class, 'create'])->name('sucursales.create');
+Route::get   ('/sucursales/{sucursal}/edit',  [SucursalController::class, 'edit'])->name('sucursales.edit');
+
+Route::get   ('/profesionales',                 [ProfesionalController::class, 'index'])->name('profesionales.index');
+Route::get   ('/profesionales/create',          [ProfesionalController::class, 'create'])->name('profesionales.create');
+Route::post  ('/profesionales',                 [ProfesionalController::class, 'store'])->name('profesionales.store');
+Route::get   ('/profesionales/{profesional}/edit', [ProfesionalController::class, 'edit'])->name('profesionales.edit');
+Route::put   ('/profesionales/{profesional}',   [ProfesionalController::class, 'update'])->name('profesionales.update');
+Route::delete('/profesionales/{profesional}',   [ProfesionalController::class, 'destroy'])->name('profesionales.destroy');
+
+Route::get   ('/horarios',                [HorarioController::class,'index'])->name('horarios.index');
+Route::get   ('/horarios/create',         [HorarioController::class,'create'])->name('horarios.create');
+Route::post  ('/horarios',                [HorarioController::class,'store'])->name('horarios.store');
+Route::get   ('/horarios/{horario}/edit', [HorarioController::class,'edit'])->name('horarios.edit');
+Route::put   ('/horarios/{horario}',      [HorarioController::class,'update'])->name('horarios.update');
+Route::delete('/horarios/{horario}',      [HorarioController::class,'destroy'])->name('horarios.destroy');
+
+Route::get   ('/bloqueos',               [BloqueoController::class,'index'])->name('bloqueos.index');
+Route::get   ('/bloqueos/create',        [BloqueoController::class,'create'])->name('bloqueos.create');
+Route::post  ('/bloqueos',               [BloqueoController::class,'store'])->name('bloqueos.store');
+Route::get   ('/bloqueos/{bloqueo}/edit',[BloqueoController::class,'edit'])->name('bloqueos.edit');
+Route::put   ('/bloqueos/{bloqueo}',     [BloqueoController::class,'update'])->name('bloqueos.update');
+Route::delete('/bloqueos/{bloqueo}',     [BloqueoController::class,'destroy'])->name('bloqueos.destroy');
 
     
     });

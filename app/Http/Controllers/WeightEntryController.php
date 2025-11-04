@@ -19,6 +19,6 @@ class WeightEntryController extends Controller
       ['valor'=>$data['peso'], 'nota'=>$data['nota'] ?? null]
     );
 
-    return back()->with('ok','Peso guardado');
+    return back()->with('success','Peso guardado');
   }
 }

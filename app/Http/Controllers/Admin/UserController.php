@@ -9,7 +9,8 @@ use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 use App\Models\GestionSaludCompleta;
 use Illuminate\Validation\Rule;
-
+use App\Models\User;
+use Illuminate\Support\Facades\Schema;
 class UserController extends Controller
 {
     /* =========================
@@ -39,100 +40,109 @@ class UserController extends Controller
      * ========================= */
 
     /** Endpoint DataTables — Usuarios registrados */
-    public function registeredData(Request $request)
-    {
-        try {
-            // Parámetros DataTables
-            $draw   = (int) $request->input('draw', 1);
-            $start  = (int) $request->input('start', 0);
-            $length = (int) $request->input('length', 10);
-            $search = trim((string) $request->input('search.value', ''));
+public function registeredData(Request $request)
+{
+    try {
+        // Parámetros DataTables
+        $draw   = (int) $request->input('draw', 1);
+        $start  = (int) $request->input('start', 0);
+        $length = (int) $request->input('length', 10);
+        $search = trim((string) $request->input('search.value', ''));
 
-            // Columnas visibles (DataTables -> alias del subquery "t")
-            $columns = [
-                0 => 'id',
-                1 => 'rut',
-                2 => 'name',
-                3 => 'email',
-                4 => 'lugar_cita',
-                5 => 'created_at',
-            ];
-            $orderColIdx = (int) $request->input('order.0.column', 0);
-            $orderDir    = $request->input('order.0.dir', 'asc') === 'desc' ? 'desc' : 'asc';
-            $orderCol    = $columns[$orderColIdx] ?? 'id';
+        // Columnas visibles (DataTables -> alias del subquery "t")
+        $columns = [
+            0 => 'id',
+            1 => 'rut',
+            2 => 'name',
+            3 => 'email',
+            4 => 'lugar_cita',
+            5 => 'created_at',
+            // Nota: no ordenamos por activo/is_blocked, pero si quisieras agregarlos aquí.
+        ];
+        $orderColIdx = (int) $request->input('order.0.column', 0);
+        $orderDir    = $request->input('order.0.dir', 'asc') === 'desc' ? 'desc' : 'asc';
+        $orderCol    = $columns[$orderColIdx] ?? 'id';
 
-            // SELECT base (sin filtros) — usamos COALESCE para tener alias "name"
-            $base = DB::table('users')->select([
-                'id',
-                DB::raw("COALESCE(rut, '')           as rut"),
-                DB::raw("COALESCE(name, '') as name"),
-                DB::raw("COALESCE(email, '')         as email"),
-                DB::raw("COALESCE(lugar_cita, '')         as lugar_cita"),
-                'created_at',
-            ]);
+        // SELECT base (sin filtros)
+        $base = DB::table('users')->select([
+            'id',
+            DB::raw("COALESCE(rut, '')         as rut"),
+            DB::raw("COALESCE(name, '')        as name"),
+            DB::raw("COALESCE(email, '')       as email"),
+            DB::raw("COALESCE(lugar_cita, '')  as lugar_cita"),
+            'created_at',
 
-            // Total bruto (sin filtro)
-            $recordsTotal = (clone $base)->count();
+            // 👇 AÑADIDO: devolver explícitamente estado activo y bloqueo
+            DB::raw('COALESCE(activo, 0)       as activo'),
+            DB::raw('COALESCE(is_blocked, 0)   as is_blocked'),
+        ]);
 
-            // Subquery para poder usar los ALIAS en WHERE/ORDER
-            $sub = DB::query()->fromSub($base, 't');
+        // Total bruto (sin filtro)
+        $recordsTotal = (clone $base)->count();
 
-            // Búsqueda
-            if ($search !== '') {
-                $sub->where(function ($q) use ($search) {
-                    $q->where('t.rut', 'like', "%{$search}%")
-                      ->orWhere('t.name', 'like', "%{$search}%")
-                      ->orWhere('t.email', 'like', "%{$search}%")
-                      ->orWhere('t.lugar_cita', 'like', "%{$search}%");
-                });
-            }
+        // Subquery para poder usar los ALIAS en WHERE/ORDER
+        $sub = DB::query()->fromSub($base, 't');
 
-            // Total filtrado
-            $recordsFiltered = (clone $sub)->count();
-
-            // Orden + Paginación (sobre alias del subquery)
-            $rows = $sub
-                ->orderBy("t.$orderCol", $orderDir)
-                ->skip($start)
-                ->take($length)
-                ->get();
-
-            // Mapeo seguro (fechas)
-            $data = $rows->map(function ($r) {
-                return [
-                    'id'         => $r->id,
-                    'rut'        => $r->rut,
-                    'name'       => $r->name,
-                    'email'      => $r->email,
-                    'lugar_cita'      => $r->lugar_cita,
-                    'created_at' => $this->safeDateTime($r->created_at),
-                ];
+        // Búsqueda
+        if ($search !== '') {
+            $sub->where(function ($q) use ($search) {
+                $q->where('t.rut', 'like', "%{$search}%")
+                  ->orWhere('t.name', 'like', "%{$search}%")
+                  ->orWhere('t.email', 'like', "%{$search}%")
+                  ->orWhere('t.lugar_cita', 'like', "%{$search}%");
             });
-
-            return response()->json([
-                'draw'            => $draw,
-                'recordsTotal'    => $recordsTotal,
-                'recordsFiltered' => $recordsFiltered,
-                'data'            => $data,
-            ], 200, [], JSON_UNESCAPED_UNICODE);
-
-        } catch (\Throwable $e) {
-            Log::error('[DT registeredData] '.$e->getMessage(), [
-                'line'  => $e->getLine(),
-                'file'  => $e->getFile(),
-                'trace' => $e->getTraceAsString(),
-            ]);
-
-            // Respuesta compatible con DataTables (evita tn/7)
-            return response()->json([
-                'draw'            => (int) $request->input('draw', 1),
-                'recordsTotal'    => 0,
-                'recordsFiltered' => 0,
-                'data'            => [],
-                'error'           => 'Error al cargar los usuarios registrados.',
-            ], 200, [], JSON_UNESCAPED_UNICODE);
         }
+
+        // Total filtrado
+        $recordsFiltered = (clone $sub)->count();
+
+        // Orden + Paginación (sobre alias del subquery)
+        $rows = $sub
+            ->orderBy("t.$orderCol", $orderDir)
+            ->skip($start)
+            ->take($length)
+            ->get();
+
+        // Mapeo seguro (fechas y estados como int)
+        $data = $rows->map(function ($r) {
+            return [
+                'id'          => $r->id,
+                'rut'         => $r->rut,
+                'name'        => $r->name,
+                'email'       => $r->email,
+                'lugar_cita'  => $r->lugar_cita,
+                'created_at'  => $this->safeDateTime($r->created_at),
+
+                // 👇 AÑADIDO: entregar a DataTables
+                'activo'      => (int) $r->activo,
+                'is_blocked'  => (int) $r->is_blocked,
+            ];
+        });
+
+        return response()->json([
+            'draw'            => $draw,
+            'recordsTotal'    => $recordsTotal,
+            'recordsFiltered' => $recordsFiltered,
+            'data'            => $data,
+        ], 200, [], JSON_UNESCAPED_UNICODE);
+
+    } catch (\Throwable $e) {
+        Log::error('[DT registeredData] '.$e->getMessage(), [
+            'line'  => $e->getLine(),
+            'file'  => $e->getFile(),
+            'trace' => $e->getTraceAsString(),
+        ]);
+
+        // Respuesta compatible con DataTables
+        return response()->json([
+            'draw'            => (int) $request->input('draw', 1),
+            'recordsTotal'    => 0,
+            'recordsFiltered' => 0,
+            'data'            => [],
+            'error'           => 'Error al cargar los usuarios registrados.',
+        ], 200, [], JSON_UNESCAPED_UNICODE);
     }
+}
 
     /** Endpoint DataTables — Usuarios NO registrados */
 public function unregisteredData(Request $request)
@@ -327,7 +337,7 @@ public function updateUnregistered(Request $request, string $rut)
     if ($updated) {
         return redirect()
             ->route('admin.users.unregistered.edit', $rut)
-            ->with('ok', 'Datos actualizados correctamente.');
+            ->with('success', 'Datos actualizados correctamente.');
     }
 
     return back()->withErrors('No se pudo actualizar el registro.');
@@ -347,10 +357,10 @@ public function updateUnregisteredEmail(Request $request, string $rut)
     ]);
 
     if ($updated === 0) {
-        return response()->json(['ok' => false, 'error' => 'No se encontró el RUT.'], 404);
+        return response()->json(['success' => false, 'error' => 'No se encontró el RUT.'], 404);
     }
 
-    return response()->json(['ok' => true]);
+    return response()->json(['success' => true]);
 }
 
 public function updateUnregisteredRut(Request $request, string $rut)
@@ -369,10 +379,10 @@ public function updateUnregisteredRut(Request $request, string $rut)
     ]);
 
     if ($updated === 0) {
-        return response()->json(['ok' => false, 'error' => 'No se encontró el RUT.'], 404);
+        return response()->json(['success' => false, 'error' => 'No se encontró el RUT.'], 404);
     }
 
-    return response()->json(['ok' => true]);
+    return response()->json(['success' => true]);
 }
     public function create()
     {
@@ -503,8 +513,104 @@ public function updateUnregisteredRut(Request $request, string $rut)
 
         return redirect()
             ->route('admin.users.unregistered')
-            ->with('ok', 'Paciente creado correctamente.');
+            ->with('success', 'Paciente creado correctamente.');
     }
+public function toggleActive($id)
+{
+    try {
+        // Sanidad de ruta / payload
+        if (!ctype_digit((string) $id)) {
+            throw new \InvalidArgumentException("ID inválido: {$id}");
+        }
+
+        // Validar que la columna exista en BD
+        if (!Schema::hasColumn('users', 'activo')) {
+            throw new \RuntimeException("La columna 'activo' NO existe en la tabla 'users'.");
+        }
+
+        $user = User::findOrFail($id);
+
+        // Normalizar a 0/1 incluso si viene null/true/false
+        $current = (int) ($user->activo ? 1 : 0);
+        $user->activo = $current ? 0 : 1;
+        $user->save();
+
+        return response()->json([
+            'success'     => true,
+            'id'     => $user->id,
+            'activo' => (int) $user->activo,
+        ], 200);
+
+    } catch (\Throwable $e) {
+        Log::error('[toggleActive] '.$e->getMessage(), [
+            'id'    => $id,
+            'file'  => $e->getFile(),
+            'line'  => $e->getLine(),
+            'trace' => $e->getTraceAsString(),
+        ]);
+
+        // Devuelve el motivo exacto al frontend (útil mientras depuramos)
+        return response()->json([
+            'ok'    => false,
+            'error' => $e->getMessage(),
+        ], 500);
+    }
+}
+
+public function toggleBlock($id)
+{
+    try {
+        if (!ctype_digit((string) $id)) {
+            throw new \InvalidArgumentException("ID inválido: {$id}");
+        }
+
+        if (!Schema::hasColumn('users', 'is_blocked')) {
+            throw new \RuntimeException("La columna 'is_blocked' NO existe en la tabla 'users'.");
+        }
+
+        $user = User::findOrFail($id);
+
+        $current = (int) ($user->is_blocked ? 1 : 0);
+        $user->is_blocked = $current ? 0 : 1;
+        $user->failed_login_attempts =0;
+        $user->failed_validated_attempts = 0;
+        $user->is_validated = 0;
+        $user->password_needs_change = 1;
+        $user->blocked_at  = null;
+                $user->failed_validated_attempts  = 0;
+
+        $user->save();
+
+        return response()->json([
+            'success'         => true,
+            'id'         => $user->id,
+            'is_blocked' => (int) $user->is_blocked,
+        ], 200);
+
+    } catch (\Throwable $e) {
+        Log::error('[toggleBlock] '.$e->getMessage(), [
+            'id'    => $id,
+            'file'  => $e->getFile(),
+            'line'  => $e->getLine(),
+            'trace' => $e->getTraceAsString(),
+        ]);
+
+        return response()->json([
+            'ok'    => false,
+            'error' => $e->getMessage(),
+        ], 500);
+    }
+}
+
+
+public function destroy($id)
+{
+    $user = User::findOrFail($id);
+    $user->delete();
+
+    return response()->json(['success' => true]);
+}
+
 }
 
 

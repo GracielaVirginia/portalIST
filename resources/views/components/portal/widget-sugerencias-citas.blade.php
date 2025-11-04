@@ -42,7 +42,7 @@
         Calcular resultados
       </button>
 
-      <a href="{{ route('portal.citas.index') }}"
+      <a href="{{ route('agenda.index') }}"
          class="inline-flex items-center gap-2 rounded-xl border border-gray-200 dark:border-gray-700
                 px-3 py-1.5 text-xs sm:text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800">
         Ver citas
