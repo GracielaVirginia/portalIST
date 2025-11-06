@@ -100,12 +100,26 @@
                                     No registrados en el portal
                                 </span>
                             </a>
+                            <a href="{{ route('admin.login_logs.index') }}"
+                                class="{{ $linkBase }} {{ $linkText }} hover:bg-purple-900 dark:hover:bg-purple-800 hover:text-white">
+                                <span class="inline-flex items-center gap-2">
+                                    <span class="h-2 w-2 rounded-full bg-purple-700 group-hover:bg-white"></span>
+                                    Sesiones usuarios registrados
+                                </span>
+                            </a>
+                            <a href="{{ route('admin.login_logs.index') }}"
+                                class="{{ $linkBase }} {{ $linkText }} hover:bg-purple-900 dark:hover:bg-purple-800 hover:text-white">
+                                <span class="inline-flex items-center gap-2">
+                                    <span class="h-2 w-2 rounded-full bg-purple-700 group-hover:bg-white"></span>
+                                    Auditorias
+                                </span>
+                            </a>
                         </div>
                     </div>
                 </div>
 
                 {{-- Noticias --}}
-                <a href="{{ route('admin.noticias.index') }}"
+                <a href="{{ route('admin.auditoria-logins') }}"
                     class="{{ $linkBase }} {{ $linkText }} {{ $linkHover }}">
                     <span class="inline-flex items-center gap-2">
                         <span class="{{ $dotBase }}"></span>
@@ -127,7 +141,7 @@
                             <span class="{{ $badgeBase }}">{{ $admins }}</span>
                         @endif
                     </a>
-
+                    
                     {{-- Popout derecha (sin gap + puente de hover) --}}
                     <div
                         class="absolute top-0 left-full z-10 hidden w-72 rounded-xl border border-gray-200 bg-white p-2 shadow-xl
@@ -228,18 +242,18 @@
             </div>
         </div>
         {{-- ================= /BLOQUE MORADO ================= --}}
-{{-- Citas (dropdown independiente) --}}
-<div class="relative group/citas mt-2">
-  <a href="#" class="{{ $linkBase }} {{ $linkText }} {{ $linkHover }}">
-    <span class="inline-flex items-center gap-2">
-      <span class="{{ $dotBase }}"></span>
-      <span class="pl-1">📅 Citas</span>
-    </span>
-  </a>
+        {{-- Citas (dropdown independiente) --}}
+        <div class="relative group/citas mt-2">
+            <a href="#" class="{{ $linkBase }} {{ $linkText }} {{ $linkHover }}">
+                <span class="inline-flex items-center gap-2">
+                    <span class="{{ $dotBase }}"></span>
+                    <span class="pl-1">📅 Citas</span>
+                </span>
+            </a>
 
-  {{-- Dropdown a la derecha --}}
-  <div
-    class="absolute top-0 left-full z-10 hidden w-64 rounded-xl border border-gray-200 bg-white p-2 shadow-xl
+            {{-- Dropdown a la derecha --}}
+            <div
+                class="absolute top-0 left-full z-10 hidden w-64 rounded-xl border border-gray-200 bg-white p-2 shadow-xl
            dark:border-gray-700 dark:bg-gray-900
            lg:group-hover/citas:block group-focus-within/citas:block
            opacity-0 scale-95 transition
@@ -247,40 +261,46 @@
            group-focus-within/citas:opacity-100 group-focus-within/citas:scale-100
            pointer-events-none lg:group-hover/citas:pointer-events-auto group-focus-within/citas:pointer-events-auto
            before:content-[''] before:absolute before:top-0 before:-left-2 before:w-2 before:h-full before:bg-transparent">
-    <div class="pl-2 space-y-1">
+                <div class="pl-2 space-y-1">
+                    <a href="{{ route('admin.citas.index') }}"
+                        class="{{ $linkBase }} {{ $linkText }} hover:bg-purple-900 dark:hover:bg-purple-800 hover:text-white">
+                        <span class="inline-flex items-center gap-2">
+                            <span class="h-2 w-2 rounded-full bg-purple-700 group-hover:bg-white"></span>
+                            Citas Reservadas
+                        </span>
+                    </a>
+                    {{-- ✅ EXISTE --}}
+                    <a href="{{ route('sucursales.index') }}"
+                        class="{{ $linkBase }} {{ $linkText }} hover:bg-purple-900 dark:hover:bg-purple-800 hover:text-white">
+                        <span class="inline-flex items-center gap-2">
+                            <span class="h-2 w-2 rounded-full bg-purple-700 group-hover:bg-white"></span>
+                            Sucursales
+                        </span>
+                    </a>
 
-      {{-- ✅ EXISTE --}}
-      <a href="{{ route('sucursales.index') }}"
-         class="{{ $linkBase }} {{ $linkText }} hover:bg-purple-900 dark:hover:bg-purple-800 hover:text-white">
-        <span class="inline-flex items-center gap-2">
-          <span class="h-2 w-2 rounded-full bg-purple-700 group-hover:bg-white"></span>
-          Sucursales
-        </span>
-      </a>
-
-      {{-- ✅ EXISTE (renombrado en el menú) --}}
-      <a href="{{ route('tipos.index') }}"
-         class="{{ $linkBase }} {{ $linkText }} hover:bg-purple-900 dark:hover:bg-purple-800 hover:text-white">
-        <span class="inline-flex items-center gap-2">
-          <span class="h-2 w-2 rounded-full bg-purple-700 group-hover:bg-white"></span>
-          Tipos de profesionales
-        </span>
-      </a>
-      <a href="{{ route('profesionales.index') }}"
-         class="{{ $linkBase }} {{ $linkText }} hover:bg-purple-900 dark:hover:bg-purple-800 hover:text-white">
-        <span class="inline-flex items-center gap-2">
-          <span class="h-2 w-2 rounded-full bg-purple-700 group-hover:bg-white"></span>
-          Profesionales
-        </span>
-      </a>
-            <a href="{{ route('horarios.index') }}"
-         class="{{ $linkBase }} {{ $linkText }} hover:bg-purple-900 dark:hover:bg-purple-800 hover:text-white">
-        <span class="inline-flex items-center gap-2">
-          <span class="h-2 w-2 rounded-full bg-purple-700 group-hover:bg-white"></span>
-          Horarios Profesionales
-        </span>
-      </a>
-      {{-- ❌ AÚN NO EXISTE. Descomenta cuando definas las rutas profesionales.* 
+                    {{-- ✅ EXISTE (renombrado en el menú) --}}
+                    <a href="{{ route('tipos.index') }}"
+                        class="{{ $linkBase }} {{ $linkText }} hover:bg-purple-900 dark:hover:bg-purple-800 hover:text-white">
+                        <span class="inline-flex items-center gap-2">
+                            <span class="h-2 w-2 rounded-full bg-purple-700 group-hover:bg-white"></span>
+                            Tipos de profesionales
+                        </span>
+                    </a>
+                    <a href="{{ route('profesionales.index') }}"
+                        class="{{ $linkBase }} {{ $linkText }} hover:bg-purple-900 dark:hover:bg-purple-800 hover:text-white">
+                        <span class="inline-flex items-center gap-2">
+                            <span class="h-2 w-2 rounded-full bg-purple-700 group-hover:bg-white"></span>
+                            Profesionales
+                        </span>
+                    </a>
+                    <a href="{{ route('horarios.index') }}"
+                        class="{{ $linkBase }} {{ $linkText }} hover:bg-purple-900 dark:hover:bg-purple-800 hover:text-white">
+                        <span class="inline-flex items-center gap-2">
+                            <span class="h-2 w-2 rounded-full bg-purple-700 group-hover:bg-white"></span>
+                            Horarios Profesionales
+                        </span>
+                    </a>
+                    {{-- ❌ AÚN NO EXISTE. Descomenta cuando definas las rutas profesionales.* 
       <a href="{{ route('profesionales.index') }}"
          class="{{ $linkBase }} {{ $linkText }} hover:bg-purple-900 dark:hover:bg-purple-800 hover:text-white">
         <span class="inline-flex items-center gap-2">
@@ -290,7 +310,7 @@
       </a>
       --}}
 
-      {{-- ❌ AÚN NO EXISTE. Ajusta si defines bloqueos.index
+                    {{-- ❌ AÚN NO EXISTE. Ajusta si defines bloqueos.index
       <a href="{{ route('bloqueos.index') }}"
          class="{{ $linkBase }} {{ $linkText }} hover:bg-purple-900 dark:hover:bg-purple-800 hover:text-white">
         <span class="inline-flex items-center gap-2">
@@ -299,9 +319,9 @@
         </span>
       </a>
       --}}
-    </div>
-  </div>
-</div>
+                </div>
+            </div>
+        </div>
 
         {{-- Cerrar sesión --}}
         <form method="POST" action="{{ route('admin.logout') }}" class="mt-3">

@@ -45,7 +45,7 @@
           <th class="py-2">Email</th>
           <th class="py-2">Teléfono</th>
           <th class="py-2">Día</th>
-          <th class="py-2"># Gestiones</th>
+          <th class="py-2">Número de caso</th>
           <th class="py-2">Detalles</th>
           <th class="py-2">Acciones</th>
         </tr>

@@ -12,4 +12,5 @@ class LugarCita extends Model
     protected $fillable = ['nombre', 'direccion'];
 
     protected $table = 'lugar_cita';
+    
 }

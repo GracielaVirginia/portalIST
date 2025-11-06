@@ -53,8 +53,10 @@ use App\Http\Controllers\SucursalController;
 use App\Http\Controllers\ProfesionalController;
 use App\Http\Controllers\HorarioController;
 use App\Http\Controllers\BloqueoController;
-
-
+use App\Http\Controllers\AgendaController;
+use App\Http\Controllers\Admin\CitaController;
+use App\Http\Controllers\Admin\LoginLogController;
+use App\Http\Controllers\Admin\AuditoriaLoginController;
 
 
 
@@ -79,6 +81,7 @@ Route::get('/promociones', [PortalPromocionesController::class, 'index'])->name(
 Route::get('/promociones/{promocion}', [PortalPromocionesController::class, 'show'])->name('portal.promociones.show');
 Route::post('/admin/support-tickets/galen', [AdminGalenSupportController::class, 'store'])
     ->name('admin.support.galen.store');
+Route::get('/portal/faqs', [PortalFaqController::class,'list'])->name('portal.faqs.list');
 
 
 });
@@ -171,8 +174,12 @@ Route::get('/assistant/list', [\App\Http\Controllers\Portal\AssistantPublicContr
     Route::post('/agenda/{id}/mover',           [AgendaPacienteController::class, 'mover'])->name('agenda.mover');
     Route::post('/agenda/estado',               [AgendaPacienteController::class, 'cambiarEstado'])->name('agenda.cambiar-estado');
 
-
-
+Route::get('/agenda/{id}/eventos-visibles', [AgendaPacienteController::class, 'apiEventosVisibles'])
+    ->name('agenda.eventos-visibles');
+Route::get('/admin/auditoria/login-intentos', [\App\Http\Controllers\Admin\LoginAuditController::class,'index'])
+  ->name('admin.login.audit');
+  Route::get('/necesitas-ayuda', [App\Http\Controllers\LoginHelpAdvisor::class, 'index'])
+    ->name('portal.need-help');
 });
 /*
 |--------------------------------------------------------------------------
@@ -267,7 +274,6 @@ Route::delete('/admin/noticias/{noticia}',       [AdminNoticiasController::class
 // Toggle “Poner en home” (marca esta noticia como destacada y desmarca el resto)
 Route::patch('/admin/noticias/{noticia}/toggle-home', [AdminNoticiasController::class, 'toggleDestacada'])
     ->name('admin.noticias.toggle-home');
-    /** Admin CRUD */
 Route::get   ('/admin/faqs',              [AdminFaqController::class,'index'])->name('admin.faqs.index');
 Route::get   ('/admin/faqs/create',       [AdminFaqController::class,'create'])->name('admin.faqs.create');
 Route::post  ('/admin/faqs',              [AdminFaqController::class,'store'])->name('admin.faqs.store');
@@ -276,8 +282,6 @@ Route::put   ('/admin/faqs/{faq}',        [AdminFaqController::class,'update'])-
 Route::delete('/admin/faqs/{faq}',        [AdminFaqController::class,'destroy'])->name('admin.faqs.destroy');
 Route::patch ('/admin/faqs/{faq}/toggle', [AdminFaqController::class,'toggle'])->name('admin.faqs.toggle');
 
-/** Portal JSON para el modal del chat box */
-Route::get('/portal/faqs', [PortalFaqController::class,'list'])->name('portal.faqs.list');
 // Administradores (CRUD + toggle)
 Route::get   ('/admin/administradores',                    [AdministradorController::class, 'index'])->name('admin.administradores.index');
 Route::get   ('/admin/administradores/crear',              [AdministradorController::class, 'create'])->name('admin.administradores.create');
@@ -316,6 +320,8 @@ Route::post('/admin/config-home', [HomeSectionSettingsController::class, 'update
 Route::get('/admin/images', [ImageController::class, 'index'])->name('admin.images.index');
 Route::post('/admin/images', [ImageController::class, 'store'])->name('admin.images.store');
 Route::delete('/admin/images/{image}', [ImageController::class, 'destroy'])->name('admin.images.destroy');
+Route::patch('/admin/images/{image}/select',  [ImageController::class, 'select'])->name('admin.images.select');
+
 
 Route::get   ('/admin/portal-sections',                [PortalSectionController::class, 'index'])->name('admin.portal.sections.index');
 Route::post  ('/admin/portal-sections',                [PortalSectionController::class, 'store'])->name('admin.portal.sections.store');
@@ -373,5 +379,17 @@ Route::get   ('/bloqueos/{bloqueo}/edit',[BloqueoController::class,'edit'])->nam
 Route::put   ('/bloqueos/{bloqueo}',     [BloqueoController::class,'update'])->name('bloqueos.update');
 Route::delete('/bloqueos/{bloqueo}',     [BloqueoController::class,'destroy'])->name('bloqueos.destroy');
 
+Route::get   ('/admin/citas',                  [CitaController::class, 'index'])->name('admin.citas.index');
+Route::get   ('/admin/citas/{cita}/edit',      [CitaController::class, 'edit'])->name('admin.citas.edit');
+Route::put   ('/admin/citas/{cita}',           [CitaController::class, 'update'])->name('admin.citas.update');
+Route::delete('/admin/citas/{cita}',           [CitaController::class, 'destroy'])->name('admin.citas.destroy');
+Route::patch ('/admin/citas/{cita}/confirmar', [CitaController::class, 'confirmar'])->name('admin.citas.confirmar');
+Route::patch ('/admin/citas/{cita}/reservada', [CitaController::class, 'reservada'])->name('admin.citas.reservada');
     
+Route::get('/admin/login-logs', [LoginLogController::class, 'index'])->name('admin.login_logs.index');
+Route::get('/admin/auditoria-logins', [AuditoriaLoginController::class, 'index'])
+    ->name('admin.auditoria-logins');
+
+
+
     });

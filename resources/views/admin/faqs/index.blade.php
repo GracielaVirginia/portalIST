@@ -30,7 +30,6 @@
       <thead>
         <tr>
           <th>Pregunta</th>
-          <th>Categoría</th>
           <th>Activa</th>
           <th class="text-right">Acciones</th>
         </tr>
@@ -41,9 +40,7 @@
             <td class="font-semibold text-purple-900 dark:text-purple-200">
               {{ $f->question }}
             </td>
-            <td class="text-sm text-gray-600 dark:text-gray-300">
-              {{ $f->category ?: '—' }}
-            </td>
+
             <td>
               @if($f->is_active)
                 <span class="inline-flex items-center gap-1 text-green-700 bg-green-100 px-2 py-1 rounded text-xs font-bold">
@@ -67,7 +64,7 @@
                 <form action="{{ route('admin.faqs.toggle', $f) }}" method="POST" class="inline">
                   @csrf @method('PATCH')
                   <button type="submit" class="btn-action cursor-pointer">
-                    ↔️ Toggle
+                    ↔️Activar 
                   </button>
                 </form>
               </div>

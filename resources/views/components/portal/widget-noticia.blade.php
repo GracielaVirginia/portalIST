@@ -21,7 +21,7 @@
 
 <article class="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 overflow-hidden shadow-sm">
   @if($img)
-    <div class="aspect-[16/6] w-full overflow-hidden">
+    <div class="aspect-[14/4] w-full overflow-hidden">
       <img src="{{ $img }}" alt="Noticia destacada" class="h-full w-full object-cover">
     </div>
   @endif

@@ -83,7 +83,7 @@
 
   {{-- Acciones --}}
   <div class="mt-4 flex items-center justify-end gap-2">
-    <button type="button"
+    <button type="button" id="btnMisControles"
             @click="showCalendario = true"
             class="inline-flex items-center justify-center gap-2 rounded-xl
                    border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-950
@@ -93,7 +93,7 @@
       <span>Mis controles</span>
     </button>
 
-    <button type="button"
+    <button type="button" id="btnEditarPerfil"
             @click="showEdit = true"
             class="inline-flex items-center rounded-xl border border-gray-200 dark:border-gray-700
                    bg-white dark:bg-gray-950 px-3 py-2 text-sm text-gray-700 dark:text-gray-200
@@ -146,26 +146,34 @@
           <div>
             <label class="block text-sm text-gray-700 dark:text-gray-300">Nombre</label>
             <input type="text" name="name" value="{{ old('name', auth()->user()->name ?? '') }}"
-                   class="mt-1 w-full rounded-md border-gray-300 dark:bg-gray-800 dark:border-gray-700"
-                   required>
+  class="mt-1 w-full rounded-md border border-gray-300 bg-white px-3 py-2
+         text-gray-900 placeholder-gray-400
+         focus:border-purple-600 focus:ring-2 focus:ring-purple-300 focus:outline-none
+         dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100 dark:placeholder-gray-500"                   required>
           </div>
           <div>
             <label class="block text-sm text-gray-700 dark:text-gray-300">Correo electrónico</label>
             <input type="email" name="email" value="{{ old('email', auth()->user()->email ?? '') }}"
-                   class="mt-1 w-full rounded-md border-gray-300 dark:bg-gray-800 dark:border-gray-700"
-                   required>
+  class="mt-1 w-full rounded-md border border-gray-300 bg-white px-3 py-2
+         text-gray-900 placeholder-gray-400
+         focus:border-purple-600 focus:ring-2 focus:ring-purple-300 focus:outline-none
+         dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100 dark:placeholder-gray-500"                   required>
           </div>
           <div>
             <label class="block text-sm text-gray-700 dark:text-gray-300">Nueva contraseña</label>
             <input type="password" name="password"
-                   class="mt-1 w-full rounded-md border-gray-300 dark:bg-gray-800 dark:border-gray-700">
-            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Déjalo en blanco para no cambiarla.</p>
+  class="mt-1 w-full rounded-md border border-gray-300 bg-white px-3 py-2
+         text-gray-900 placeholder-gray-400
+         focus:border-purple-600 focus:ring-2 focus:ring-purple-300 focus:outline-none
+         dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100 dark:placeholder-gray-500"            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Déjalo en blanco para no cambiarla.</p>
           </div>
           <div>
             <label class="block text-sm text-gray-700 dark:text-gray-300">Confirmar contraseña</label>
             <input type="password" name="password_confirmation"
-                   class="mt-1 w-full rounded-md border-gray-300 dark:bg-gray-800 dark:border-gray-700">
-          </div>
+  class="mt-1 w-full rounded-md border border-gray-300 bg-white px-3 py-2
+         text-gray-900 placeholder-gray-400
+         focus:border-purple-600 focus:ring-2 focus:ring-purple-300 focus:outline-none
+         dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100 dark:placeholder-gray-500"          </div>
           <div class="flex justify-end">
             <button type="submit"
                     class="px-4 py-2 bg-purple-900 text-white rounded-md hover:opacity-90">
@@ -181,8 +189,10 @@
           @method('DELETE')
           <label class="block text-sm text-gray-700 dark:text-gray-300">Confirma tu contraseña para eliminar la cuenta</label>
           <input type="password" name="password" required
-                 class="mt-1 w-full rounded-md border-gray-300 dark:bg-gray-800 dark:border-gray-700"
-                 placeholder="Contraseña actual">
+  class="mt-1 w-full rounded-md border border-gray-300 bg-white px-3 py-2
+         text-gray-900 placeholder-gray-400
+         focus:border-purple-600 focus:ring-2 focus:ring-purple-300 focus:outline-none
+         dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100 dark:placeholder-gray-500"                 placeholder="Contraseña actual">
           <div class="flex justify-end mt-3">
             <button type="submit"
                     class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700">

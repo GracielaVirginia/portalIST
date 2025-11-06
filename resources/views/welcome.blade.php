@@ -43,12 +43,12 @@
 
       <a href="{{ route('clear.session') }}"
          class="px-6 py-3 rounded-lg font-semibold text-white bg-purple-900 hover:bg-purple-800 shadow-md transition">
-        Portal Pacientes (dar click dos veces)
+        Portal Pacientes 
       </a>
 
       <a href="{{ url('/login-admin') }}"
          class="px-6 py-3 rounded-lg font-semibold border-2 border-purple-900 text-purple-900 hover:bg-purple-900 hover:text-white dark:border-purple-400 dark:text-purple-300 dark:hover:bg-purple-500 dark:hover:text-white transition">
-        Panel Administrativo
+        Portal Administrativo
       </a>
     </div>
   </main>

@@ -10,7 +10,7 @@ class Cita extends Model
 
     protected $fillable = [
         'idempresa','idsucursal','profesional_id','paciente_id',
-        'fecha','hora_inicio','hora_fin','tipo_atencion','estado','motivo',
+        'fecha','hora_inicio','hora_fin','tipo_atencion','estado','motivo','lugar_cita',
     ];
 
     protected $casts = [
@@ -20,5 +20,10 @@ class Cita extends Model
     public function profesional()
     {
         return $this->belongsTo(Profesional::class, 'profesional_id');
+    }
+        public function paciente()
+    {
+        // Si tus pacientes son usuarios estándar:
+        return $this->belongsTo(\App\Models\User::class, 'id');
     }
 }

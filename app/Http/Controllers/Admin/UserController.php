@@ -183,6 +183,7 @@ public function unregisteredData(Request $request)
             ->selectRaw('MIN(COALESCE(g.telefono, ""))        as telefono')
             ->selectRaw('DATE(COALESCE(g.fecha_solicitud, g.created_at)) as dia')
             ->selectRaw('COUNT(*) as gestiones')
+            ->selectRaw('MIN(COALESCE(g.numero_caso, ""))        as numero_caso')
             // Detalles de ese día: todas las gestiones concatenadas
             ->selectRaw("
                 GROUP_CONCAT(
@@ -233,7 +234,7 @@ public function unregisteredData(Request $request)
                 'email'            => $r->email,
                 'telefono'         => $r->telefono,
                 'dia'              => $r->dia,
-                'gestiones'        => (int) $r->gestiones,
+                'gestiones'        => (int) $r->numero_caso,
                 'detalles'         => $detalles,
                 'primera_fecha'    => $this->safeDateTime($r->primera_fecha),
             ];

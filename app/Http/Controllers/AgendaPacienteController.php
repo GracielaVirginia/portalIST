@@ -4,10 +4,11 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use App\Models\Profesional;
-use App\Models\Horario;            // ⬅️ usa Horario
+use App\Models\Horario;            
 use App\Models\Bloqueo;
 use App\Models\Cita;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Schema;
 
 class AgendaPacienteController extends Controller
 {
@@ -202,45 +203,53 @@ class AgendaPacienteController extends Controller
         return response()->json(['disponible' => $ok]);
     }
 
-    /** Guardar cita desde el modal */
-    public function store(Request $r)
-    {
-        $r->validate([
-            'profesional_id' => 'required|exists:profesionales,id',
-            'fecha'          => 'required|date',
-            'hora_inicio'    => 'required|date_format:H:i',
-            'hora_fin'       => 'required|date_format:H:i|after:hora_inicio',
-            'tipo_atencion'  => 'required|in:presencial,remota',
-        ]);
+public function store(Request $r)
+{
+    $r->validate([
+        'profesional_id' => 'required|exists:profesionales,id',
+        'fecha'          => 'required|date',
+        'hora_inicio'    => 'required|date_format:H:i',
+        'hora_fin'       => 'required|date_format:H:i|after:hora_inicio',
+        'tipo_atencion'  => 'required|in:presencial,remota',
+        'motivo'         => 'nullable|string|max:2000',
+    ]);
 
-        $ok = $this->disponible(
-            (int)$r->profesional_id,
-            $r->fecha,
-            $r->hora_inicio,
-            $r->hora_fin
-        );
+    // ✅ Trae idsucursal (y idempresa si quieres) del profesional elegido
+    $profesional = Profesional::select('idsucursal','idempresa')
+        ->findOrFail((int)$r->profesional_id);
 
-        if (!$ok) {
-            return back()
-                ->with('error', 'El horario ya no está disponible o cae en descanso.')
-                ->withInput();
-        }
+    $ok = $this->disponible(
+        (int)$r->profesional_id,
+        $r->fecha,
+        $r->hora_inicio,
+        $r->hora_fin
+    );
 
-        Cita::create([
-            'idempresa'      => auth()->user()->idempresa ?? 1,
-            'idsucursal'     => auth()->user()->idsucursal ?? null,
-            'profesional_id' => (int)$r->profesional_id,
-            'paciente_id'    => auth()->id(), // ajusta según tu esquema
-            'fecha'          => $r->fecha,
-            'hora_inicio'    => $r->hora_inicio,
-            'hora_fin'       => $r->hora_fin,
-            'motivo'         => $r->motivo,
-            'tipo_atencion'  => $r->tipo_atencion,
-            'estado'         => 'pendiente',
-        ]);
-
-        return redirect()->route('agenda.index')->with('success','Cita creada');
+    if (!$ok) {
+        return back()
+            ->with('error', 'El horario ya no está disponible o cae en descanso.')
+            ->withInput();
     }
+
+    Cita::create([
+        // puedes priorizar idempresa del profesional si quieres
+        'idempresa'      => auth()->user()->idempresa ?? ($profesional->idempresa ?? 1),
+        // ✅ aquí va la sucursal del profesional seleccionado
+        'idsucursal'     => $profesional->idsucursal,
+        'profesional_id' => (int)$r->profesional_id,
+        'paciente_id'    => auth()->id(),
+        'fecha'          => $r->fecha,
+        'hora_inicio'    => $r->hora_inicio,
+        'hora_fin'       => $r->hora_fin,
+        'motivo'         => $r->motivo,
+        'lugar_cita'   => auth()->user()->lugar_cita,
+        'tipo_atencion'  => $r->tipo_atencion,
+        'estado'         => 'reservada',
+    ]);
+
+    return redirect()->route('agenda.index')->with('success','Cita creada');
+}
+
 
     /** Bloquear un slot libre en una fecha puntual */
     public function bloquearSlot($id, Request $r)
@@ -255,7 +264,7 @@ class AgendaPacienteController extends Controller
         $diaStr = mb_strtolower(Carbon::parse($r->fecha)->locale('es')->isoFormat('dddd'));
 
         // Buscar el horario del profesional para ese día
-        $horario = Horario::where('idprofesional', (int)$id)
+        $horario = Horario::where('profesional_id', (int)$id)
                     ->whereRaw('LOWER(dia_semana)=?', [$diaStr])->first();
 
         if (!$horario) {
@@ -292,7 +301,7 @@ class AgendaPacienteController extends Controller
         // 1) Debe caer dentro del horario laboral del día
         $diaStr = mb_strtolower(Carbon::parse($fecha)->locale('es')->isoFormat('dddd'));
 
-        $horario = Horario::where('idprofesional', $profesionalId)
+        $horario = Horario::where('profesional_id', $profesionalId)
             ->whereRaw('LOWER(dia_semana)=?', [$diaStr])
             ->first();
 
@@ -303,7 +312,7 @@ class AgendaPacienteController extends Controller
         }
 
         // 2) No pisa bloqueos (periódicos o puntuales)
-        $bloqueos = Bloqueo::where('idhorario_profesional', $horario->id)
+        $bloqueos = Bloqueo::where('profesional_id', $horario->id)
             ->where(function($q) use($fecha){
                 $q->whereNull('fecha')->orWhere('fecha', $fecha);
             })->get();
@@ -335,4 +344,108 @@ class AgendaPacienteController extends Controller
     {
         return ($ini >= $hStart) && ($fin <= $hEnd);
     }
+
+/**
+ * API: eventos visibles según perfil del viewer.
+ * GET /agenda/{id}/eventos-visibles?start=...&end=...
+ */
+public function apiEventosVisibles($id, \Illuminate\Http\Request $request)
+{
+    $profesionalId = (int) $id;
+
+    // Log para confirmar hit
+    Log::info('API eventos-visibles HIT', [
+        'profesional_id' => $profesionalId,
+        'start' => $request->query('start'),
+        'end'   => $request->query('end'),
+    ]);
+
+    // ==== ¿Viewer es admin? (tabla admin_usuarios) ====
+    $viewer  = $request->user();
+    $isAdmin = false;
+
+    try {
+        if (Schema::hasTable('admin_usuarios') && $viewer) {
+            // Preferir user_id si existe; sino probar email
+            if (Schema::hasColumn('admin_usuarios', 'user_id')) {
+                $isAdmin = DB::table('admin_usuarios')->where('user_id', $viewer->id)->exists();
+            } elseif (Schema::hasColumn('admin_usuarios', 'email') && !empty($viewer->email)) {
+                $isAdmin = DB::table('admin_usuarios')->where('email', $viewer->email)->exists();
+            }
+        }
+    } catch (\Throwable $e) {
+        Log::warning('admin_usuarios check failed', ['err' => $e->getMessage()]);
+        $isAdmin = false;
+    }
+
+    // ==== Citas del profesional en el rango que pide FullCalendar ====
+    $start = $request->query('start'); // ISO
+    $end   = $request->query('end');
+
+    $q = Cita::with(['paciente'])
+        ->where('profesional_id', $profesionalId);
+
+    if ($start) $q->where('fecha', '>=', substr($start, 0, 10));
+    if ($end)   $q->where('fecha', '<=', substr($end,   0, 10));
+
+    $citas = $q->orderBy('fecha')->orderBy('hora_inicio')->get();
+
+    // Colores por estado
+    $bgByEstado = [
+        'reservada'  => '#fee2e2', // rosa
+        'confirmada' => '#fef3c7', // ámbar
+        'cancelada'  => '#e5e7eb', // gris
+        'atendida'   => '#dcfce7', // verde
+    ];
+    $txByEstado = [
+        'reservada'  => '#b91c1c',
+        'confirmada' => '#b45309',
+        'cancelada'  => '#111827',
+        'atendida'   => '#15803d',
+    ];
+
+    $events = $citas->map(function (Cita $c) use ($isAdmin, $bgByEstado, $txByEstado) {
+        $estado = $c->estado ?: 'reservada';
+        $bg = $bgByEstado[$estado] ?? '#e5e7eb';
+        $tx = $txByEstado[$estado] ?? '#111827';
+
+        if ($isAdmin) {
+            $pac   = $c->paciente;
+            $nombre = trim(($pac->name ?? '') !== '' ? $pac->name : trim(($pac->nombres ?? '').' '.($pac->apellidos ?? '')));
+            $rut    = $pac->rut ?? $pac->documento ?? null; // ajusta a tu columna real
+            $title  = $rut ? "{$nombre} — {$rut}" : ($nombre ?: 'Paciente');
+        } else {
+            $title = 'Ocupado';
+        }
+
+        // Si tus columnas ya tienen segundos, no añadas ":00"
+        $startStr = preg_match('/:\d{2}:\d{2}$/', $c->hora_inicio) ? $c->hora_inicio : ($c->hora_inicio.':00');
+        $endStr   = preg_match('/:\d{2}:\d{2}$/', $c->hora_fin)    ? $c->hora_fin    : ($c->hora_fin.':00');
+
+        return [
+            'id'    => $c->id,
+            'title' => $title,
+            'start' => $c->fecha.'T'.$startStr,
+            'end'   => $c->fecha.'T'.$endStr,
+            'backgroundColor' => $bg,
+            'borderColor'     => $bg,
+            'textColor'       => $tx,
+            'extendedProps'   => [
+                'estado'        => $estado,
+                'tipo_atencion' => $c->tipo_atencion,
+                'visible'       => $isAdmin ? 'admin' : 'paciente',
+                'paciente_id'   => $c->paciente_id,
+            ],
+        ];
+    });
+
+    Log::info('API eventos-visibles OUT', [
+        'profesional_id' => $profesionalId,
+        'count'          => $events->count(),
+        'is_admin'       => $isAdmin,
+    ]);
+
+    return response()->json($events);
+}
+
 }

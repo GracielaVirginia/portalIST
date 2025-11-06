@@ -3,7 +3,7 @@
 
   {{-- BOTÓN FLOTANTE --}}
   <button
-    @click="open = true"
+    @click="open = true" id="btnAsistenteVirtual"
     class="fixed bottom-12 right-0 w-16 h-16 rounded-full
            border-2 border-purple-700 text-purple-700 bg-transparent
            hover:bg-purple-50 active:scale-95

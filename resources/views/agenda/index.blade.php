@@ -10,7 +10,7 @@
     <div class="relative px-5 py-6 sm:px-8">
       <div class="flex flex-col sm:flex-row sm:items-center gap-4">
         <div class="flex-1 min-w-0">
-                    <button type="button"
+          <button type="button"
                   class="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-white/10 text-white hover:bg-white/20 ring-1 ring-white/20 focus:outline-none focus:ring-2 focus:ring-white/50"
                   onclick="document.referrer ? history.back() : window.location.assign('{{ url('/') }}')"
                   aria-label="Volver atrás">
@@ -21,12 +21,17 @@
             <span class="hidden sm:inline">Volver</span>
           </button>
           <h1 class="text-2xl sm:text-3xl font-bold text-white">Agendar Cita</h1>
-          <p class="text-purple-100/90 text-sm">Selecciona un profesional para ver disponibilidad.</p>
+          <p class="text-purple-100/90 text-sm">
+            Selecciona un profesional para ver disponibilidad.
+          </p>
         </div>
+
         <div class="w-full sm:w-[360px]">
           <label for="selectMedico" class="block text-sm font-medium text-purple-100">Profesional</label>
           <select id="selectMedico"
-                  class="mt-1 w-full px-3 py-2 rounded-lg border-0 outline-none ring-2 ring-white/20 focus:ring-white/40 bg-white/10 backdrop-blur text-white">
+                  class="mt-1 w-full px-3 py-2 rounded-lg border-0 outline-none 
+                         ring-2 ring-white/20 focus:ring-white/40 bg-white/10 backdrop-blur text-white 
+                         animate-pulse-shadow-white">
             <option value="">— Selecciona —</option>
             @foreach($profesionales as $p)
               <option value="{{ $p->id }}" class="text-gray-900">
@@ -40,7 +45,7 @@
     </div>
   </div>
 
-  {{-- FILA INFERIOR: FLEX 3/4 + 1/4 (SIN ASIDE, SIN BOTÓN) --}}
+  {{-- FILA INFERIOR: FLEX 3/4 + 1/4 --}}
   <div id="filaFlex" class="flex items-start gap-4 overflow-x-auto">
 
     {{-- IZQUIERDA: 3/4 (calendario) --}}
@@ -80,11 +85,12 @@
 @endsection
 
 @push('scripts')
-{{-- FullCalendar y SweetAlert --}}
+{{-- FullCalendar + locales ES y SweetAlert --}}
 <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/locales-all.global.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-{{-- Skin Morado para el mini-cal (TU CSS) + tema púrpura para FullCalendar --}}
+{{-- Skin Morado para el mini-cal + tema púrpura para FullCalendar --}}
 <style>
 /* ===========================
    Calendario - Skin Morado
@@ -141,6 +147,13 @@
 .fc .fc-button-primary:disabled{ opacity:.55; }
 .fc .fc-timegrid-slot{ height: 1.75rem; }
 .fc-theme-standard td, .fc-theme-standard th{ border-color: rgba(124,58,237,.15); }
+
+/* Borde pulsante para el select del profesional */
+@keyframes pulse-shadow-white {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.7); }
+  50%      { box-shadow: 0 0 0 12px rgba(255, 255, 255, 0); }
+}
+.animate-pulse-shadow-white { animation: pulse-shadow-white 3s infinite ease-in-out; }
 </style>
 
 <script>
@@ -159,6 +172,7 @@ window.Swal = Swal.mixin({
 /* ===== Estado / helpers ===== */
 const DBG = true;
 function dlog(...a){ if(DBG) console.log('[AGENDA]', ...a); }
+
 const COLOR_DISPONIBLE = '#f3e8ff';
 let calendar;
 let BUSINESS_HOURS  = [];
@@ -202,7 +216,7 @@ function cerrarModal(){ const m = document.getElementById('modalCrearCita'); if(
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
-  // FullCalendar
+  // ===== FullCalendar =====
   const calendarEl = document.getElementById('calendar');
   calendar = new FullCalendar.Calendar(calendarEl, {
     initialView: 'timeGridWeek',
@@ -212,19 +226,50 @@ document.addEventListener('DOMContentLoaded', () => {
     slotMaxTime: '20:00:00',
     scrollTime: '08:00:00',
     slotDuration: '00:10:00',
-
+    eventDisplay: 'block',
     businessHours: [],
+    timeZone: 'local',
+    locale: 'es',
+    height: '100%', expandRows: true, contentHeight: 'auto',
+
+    eventTimeFormat: { hour: '2-digit', minute: '2-digit', meridiem: false },
+
     eventSources: [
-      { events: (i, ok)=> ok(BG_DISPONIBLES) }, // fondos “disponible”
-      // aquí puedes añadir tus citas reales
+      // 📅 Citas reales (desde backend)
+      {
+        events: (info, success, failure) => {
+          if (!profesionalId) { success([]); return; }
+
+          const url = `{{ url('/agenda') }}/${encodeURIComponent(profesionalId)}/eventos-visibles`
+                    + `?start=${encodeURIComponent(info.startStr)}&end=${encodeURIComponent(info.endStr)}`;
+
+          dlog('fetch eventos-visibles:', url);
+          fetch(url, { headers: { 'Accept': 'application/json' } })
+            .then(r => {
+              if (!r.ok) throw new Error('HTTP ' + r.status);
+              return r.json();
+            })
+            .then(data => {
+              // Asegúrate que 'data' sea un array de eventos: [{id,title,start,end,...}]
+              dlog('eventos-visibles resp:', data);
+              success(Array.isArray(data) ? data : []);
+            })
+            .catch(err => {
+              console.error('[AGENDA] eventos-visibles error:', err);
+              failure(err);
+            });
+        }
+      },
+
+      // 🎨 Fondos de disponibilidad
+      { events: (i, ok) => ok(BG_DISPONIBLES) }
     ],
 
-    height: '100%', expandRows: true, contentHeight: 'auto',
     datesSet(){ calendar.updateSize(); },
 
     dateClick(info){
       calendar.changeView('timeGridDay', info.date);
-      // mini-cal se sincroniza en datesSet más abajo
+      // mini-cal se sincroniza en datesSet
     },
 
     selectable: true,
@@ -348,8 +393,8 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   window.fcCalendar = calendar;
   calendar.render();
-  window.addEventListener('load', ()=> calendar.updateSize());
-  window.addEventListener('resize', ()=> calendar.updateSize());
+  window.addEventListener('load',  ()=> calendar.updateSize());
+  window.addEventListener('resize',()=> calendar.updateSize());
 
   // ===== SELECT PROFESIONAL =====
   const sel = document.getElementById('selectMedico');
@@ -367,6 +412,7 @@ document.addEventListener('DOMContentLoaded', () => {
     try{
       const url = `{{ url('/agenda') }}/${encodeURIComponent(profesionalId)}/horarios`;
       const res  = await fetch(url, { headers:{ 'Accept':'application/json' }});
+      if (!res.ok) throw new Error('HTTP ' + res.status);
       const data = await res.json();
 
       BUSINESS_HOURS  = Array.isArray(data.businessHours) ? data.businessHours : [];
@@ -392,7 +438,7 @@ document.addEventListener('DOMContentLoaded', () => {
     sel.dispatchEvent(new Event('change', {bubbles:true}));
   }
 
-  // ===== Botón “Bloquear segmento seleccionado” =====
+  // ===== Botón “Bloquear segmento seleccionado” (si existe en tu modal) =====
   document.getElementById('btnBloquear')?.addEventListener('click', ()=>{
     const fecha = document.getElementById('fechaCita')?.value;
     const hIni  = document.getElementById('horaIni')?.value;

@@ -57,7 +57,46 @@
   </div>
 
   <main id="content" class="flex-grow">
-    <button id="modoFacil" class="text-sm text-purple-700">Activar modo fácil</button>
+<button id="modoFacil"
+  type="button"
+  aria-pressed="false"
+  class="w-full sm:w-auto px-4 py-3 text-base font-semibold rounded-full
+         bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white
+         shadow-md hover:shadow-lg hover:from-violet-700 hover:to-fuchsia-700
+         focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-violet-400
+         dark:from-violet-600 dark:to-fuchsia-600 dark:hover:from-violet-700 dark:hover:to-fuchsia-700
+         transition-all duration-200 ease-in-out">
+  <span class="block leading-tight">
+    <span class="block" data-label>Activar modo fácil</span>
+    <span class="block text-white/90 text-xs font-normal">
+      <strong data-state>Desactivado</strong>
+    </span>
+  </span>
+</button>
+
+<script>
+  (function () {
+    const btn = document.getElementById('modoFacil');
+    const KEY = 'modoFacilOn';
+
+    function apply(on) {
+      btn.setAttribute('aria-pressed', String(on));
+      btn.querySelector('[data-label]').textContent = on ? 'Desactivar modo fácil' : 'Activar modo fácil';
+      btn.querySelector('[data-state]').textContent = on ? 'Activado' : 'Desactivado';
+      document.documentElement.classList.toggle('modo-facil', on);
+      localStorage.setItem(KEY, on ? '1' : '0');
+    }
+
+    // Restaurar preferencia
+    apply(localStorage.getItem(KEY) === '1');
+
+    // Alternar
+    btn.addEventListener('click', () => {
+      const on = btn.getAttribute('aria-pressed') !== 'true';
+      apply(on);
+    });
+  })();
+</script>
 
 <script>
 document.getElementById('modoFacil').addEventListener('click', () => {
@@ -87,7 +126,7 @@ document.getElementById('modoFacil').addEventListener('click', () => {
 
       <div class="flex items-center gap-3">
         {{-- Ayuda (abre modal) --}}
-        <a href="#"
+        <a href="#" id="btnAyuda"
            @click.prevent="helpOpen = true"
            class="inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-sm font-semibold
                   bg-white text-purple-900 border border-purple-200
@@ -101,7 +140,6 @@ document.getElementById('modoFacil').addEventListener('click', () => {
   </footer>
 
   {{-- Mantengo tus componentes --}}
-  <x-portal.assistant-bot />
   {{-- @include('components.portal.chat-box') --}}
 
   {{-- ===== Modal: Centro de ayuda ===== --}}
@@ -227,12 +265,13 @@ document.getElementById('modoFacil').addEventListener('click', () => {
               class="w-full rounded-lg border-gray-300 dark:bg-gray-800 dark:border-gray-700 text-sm px-3 py-2">
 
         {{-- Listado --}}
-        <template x-for="it in items" :key="it.id">
-          <details class="rounded-lg border border-gray-200 dark:border-gray-700 p-3">
-            <summary class="font-medium cursor-pointer text-purple-900 dark:text-gray-100" x-text="it.question"></summary>
-            <div class="mt-2 text-sm text-gray-700 dark:text-gray-300" x-text="it.answer"></div>
-          </details>
-        </template>
+<template x-for="it in items" :key="it.id">
+  <div class="rounded-xl border border-gray-200 dark:border-gray-700 p-4">
+    <h4 class="text-sm font-semibold text-purple-900 dark:text-gray-100" x-text="it.question"></h4>
+    <!-- Usa x-html si tu answer trae HTML; si es texto plano, cambia a x-text -->
+    <div class="mt-2 text-sm text-gray-700 dark:text-gray-300" x-html="it.answer"></div>
+  </div>
+</template>
 
         {{-- Sin resultados --}}
         <div x-show="items.length===0" class="text-sm text-gray-500 text-center">Sin resultados</div>
@@ -242,6 +281,7 @@ document.getElementById('modoFacil').addEventListener('click', () => {
 
 </div> {{-- <-- AQUÍ recién cerramos el contenedor con x-data --}}
 <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+  <x-portal.assistant-bot />
 
 {{-- ==== Núcleo del Tema ==== --}}
 <script>

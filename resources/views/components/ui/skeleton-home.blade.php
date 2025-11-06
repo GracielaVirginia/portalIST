@@ -1,66 +1,138 @@
-@props([
-  'class' => '',
-])
+@props(['class' => ''])
 
-<div {{ $attributes->merge(['class' => "$class"]) }}>
-  {{-- Header / Panel del paciente --}}
-  <div class="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-4 shadow-sm">
-    <div class="flex items-center gap-4">
-      <div class="h-12 w-12 rounded-full skeleton"></div>
-      <div class="flex-1 space-y-2">
-        <div class="h-4 w-40 skeleton"></div>
-        <div class="h-3 w-24 skeleton"></div>
+<div {{ $attributes->merge(['class' => $class]) }}>
+  {{-- ========== HEADER / PANEL DEL PACIENTE ========== --}}
+  <div class="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-4 lg:p-5 shadow-sm">
+    <div class="flex items-start justify-between gap-4">
+      {{-- Izquierda: avatar + datos paciente --}}
+      <div class="flex items-center gap-4 min-w-0">
+        <div class="h-12 w-12 rounded-full skeleton shrink-0"></div>
+        <div class="space-y-2 min-w-0">
+          <div class="h-4 w-56 skeleton"></div>
+          <div class="flex flex-wrap gap-2">
+            <div class="h-3 w-32 skeleton rounded-full"></div>
+            <div class="h-3 w-14 skeleton rounded-full"></div>
+            <div class="h-3 w-16 skeleton rounded-full"></div>
+            <div class="h-3 w-24 skeleton rounded-full"></div>
+          </div>
+        </div>
       </div>
-      <div class="h-6 w-24 skeleton"></div>
+
+      {{-- Derecha: acciones (Mis controles / Editar / Cerrar) y logo --}}
+      <div class="flex items-center gap-3">
+        <div class="hidden md:flex items-center gap-2">
+          <div class="h-6 w-24 skeleton rounded-full"></div>
+          <div class="h-6 w-24 skeleton rounded-full"></div>
+          <div class="h-6 w-20 skeleton rounded-full"></div>
+        </div>
+        <div class="h-8 w-28 sm:w-36 skeleton rounded-xl"></div>
+      </div>
     </div>
   </div>
 
-  {{-- KPI cards --}}
+  {{-- ========== KPI CARDS (Próximas citas, Resultados, Licencias, Alertas) ========== --}}
   <div class="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-    @for($i=0;$i<4;$i++)
+    @foreach (['Próximas citas','Resultados','Licencias','Alertas'] as $i => $label)
       <div class="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-4 shadow-sm">
-        <div class="h-3 w-20 skeleton"></div>
-        <div class="mt-3 h-7 w-24 skeleton"></div>
-        <div class="mt-2 h-3 w-16 skeleton"></div>
+        <div class="flex items-center justify-between gap-3">
+          <div class="flex items-center gap-3 min-w-0">
+            <div class="h-8 w-8 rounded-xl skeleton shrink-0"></div>
+            <div class="space-y-2 min-w-0">
+              <div class="h-3 w-28 skeleton"></div>
+              <div class="h-3 w-16 skeleton"></div>
+            </div>
+          </div>
+          <div class="h-6 w-8 skeleton rounded-full"></div>
+        </div>
       </div>
-    @endfor
+    @endforeach
   </div>
 
+  {{-- ========== CUERPO: SIDEBAR + CONTENIDO PRINCIPAL ========== --}}
   <div class="mt-4 grid grid-cols-1 lg:grid-cols-12 gap-4">
-    {{-- Sidebar --}}
-    <div class="lg:col-span-3 space-y-3">
+    {{-- ------- SIDEBAR ------- --}}
+    <aside class="lg:col-span-3 space-y-3">
+      {{-- Inicio + Todos mis resultados --}}
       <div class="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-4 shadow-sm">
-        <div class="h-4 w-40 skeleton"></div>
-        <div class="mt-3 space-y-2">
-          @for($i=0;$i<4;$i++)
-            <div class="h-8 w-full skeleton"></div>
-          @endfor
+        {{-- "Inicio" --}}
+        <div class="flex items-center gap-2">
+          <div class="h-3 w-16 skeleton"></div>
         </div>
-      </div>
-      <div class="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-4 shadow-sm">
-        <div class="h-4 w-48 skeleton"></div>
-        <div class="mt-3 h-24 w-full skeleton"></div>
-      </div>
-    </div>
 
-    {{-- Grid principal de resultados / tarjetas --}}
-    <div class="lg:col-span-9 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
-      @for($i=0;$i<6;$i++)
-        <div class="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-4 shadow-sm">
-          <div class="flex items-start justify-between gap-3">
-            <div class="space-y-2 w-full">
-              <div class="h-4 w-3/5 skeleton"></div>
-              <div class="h-3 w-24 skeleton"></div>
-            </div>
-            <div class="h-5 w-16 skeleton"></div>
-          </div>
-          <div class="mt-4 space-y-2">
-            <div class="h-3 w-11/12 skeleton"></div>
-            <div class="h-3 w-4/5 skeleton"></div>
-            <div class="h-8 w-24 skeleton"></div>
-          </div>
+        {{-- "Todos mis resultados" header --}}
+        <div class="mt-4 flex items-center justify-between">
+          <div class="h-3 w-32 skeleton"></div>
+          <div class="h-5 w-6 skeleton rounded-full"></div>
         </div>
-      @endfor
-    </div>
+
+        {{-- Sub-items (Ver todos, Endocrinología, Laboratorio, Radiografía) --}}
+        <div class="mt-3 space-y-2">
+          @foreach (['Ver todos','Endocrinología','Laboratorio','Radiografía'] as $item)
+            <div class="flex items-center justify-between gap-3">
+              <div class="flex items-center gap-2 min-w-0">
+                <div class="h-2.5 w-2.5 rounded-full skeleton shrink-0"></div>
+                <div class="h-3 w-36 skeleton"></div>
+              </div>
+              <div class="h-5 w-5 skeleton rounded-full shrink-0"></div>
+            </div>
+          @endforeach
+        </div>
+      </div>
+
+      {{-- Licencias --}}
+      <div class="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-4 shadow-sm">
+        <div class="flex items-center justify-between">
+          <div class="h-3 w-20 skeleton"></div>
+          <div class="h-5 w-6 skeleton rounded-full"></div>
+        </div>
+        <div class="mt-3 h-16 w-full skeleton rounded-xl"></div>
+      </div>
+
+      {{-- Recetas --}}
+      <div class="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-4 shadow-sm">
+        <div class="flex items-center justify-between">
+          <div class="h-3 w-16 skeleton"></div>
+          <div class="h-5 w-6 skeleton rounded-full"></div>
+        </div>
+        <div class="mt-3 h-12 w-full skeleton rounded-xl"></div>
+      </div>
+    </aside>
+
+    {{-- ------- CONTENIDO PRINCIPAL ------- --}}
+    <main class="lg:col-span-9 space-y-4">
+      {{-- Banner/noticia grande tipo “IST se suma al CES UAI” --}}
+      <div class="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-sm overflow-hidden">
+        <div class="w-full aspect-[21/9] skeleton"></div>
+        <div class="p-4 sm:p-5">
+          <div class="h-4 w-3/5 skeleton"></div>
+          <div class="mt-3 space-y-2">
+            <div class="h-3 w-11/12 skeleton"></div>
+            <div class="h-3 w-10/12 skeleton"></div>
+            <div class="h-3 w-9/12 skeleton"></div>
+          </div>
+          <div class="mt-4 h-8 w-24 skeleton rounded-xl"></div>
+        </div>
+      </div>
+
+      {{-- Tarjetas secundarias opcionales (si necesitas completar la grilla) --}}
+      <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
+        @for ($i = 0; $i < 3; $i++)
+          <div class="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-4 shadow-sm">
+            <div class="flex items-start justify-between gap-3">
+              <div class="space-y-2 w-full">
+                <div class="h-4 w-3/5 skeleton"></div>
+                <div class="h-3 w-24 skeleton"></div>
+              </div>
+              <div class="h-5 w-16 skeleton"></div>
+            </div>
+            <div class="mt-4 space-y-2">
+              <div class="h-3 w-11/12 skeleton"></div>
+              <div class="h-3 w-4/5 skeleton"></div>
+              <div class="h-8 w-24 skeleton"></div>
+            </div>
+          </div>
+        @endfor
+      </div>
+    </main>
   </div>
 </div>

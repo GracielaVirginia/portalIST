@@ -80,4 +80,11 @@ class ImageController extends Controller
             return response()->json(['error' => 'No se pudo eliminar la imagen.'], 500);
         }
     }
+    public function select(\App\Models\Image $image)
+{
+    \App\Models\Image::where('seleccionada', true)->update(['seleccionada' => false]); // opcional
+    $image->seleccionada = true;
+    $image->save();
+    return response()->json(['ok' => true, 'id' => $image->id]);
+}
 }
