@@ -57,6 +57,10 @@ use App\Http\Controllers\AgendaController;
 use App\Http\Controllers\Admin\CitaController;
 use App\Http\Controllers\Admin\LoginLogController;
 use App\Http\Controllers\Admin\AuditoriaLoginController;
+use App\Http\Controllers\SessionController;
+use App\Http\Controllers\Admin\OtherSettingController;
+use App\Http\Controllers\UserDocumentController;
+
 
 
 
@@ -91,7 +95,7 @@ Route::get('/portal/faqs', [PortalFaqController::class,'list'])->name('portal.fa
 | Rutas Protegidas (pacientes autenticados)
 |--------------------------------------------------------------------------
 */
-    Route::middleware('auth')->group(function () {
+    Route::middleware('auth', 'must.be.validated')->group(function () {
 // Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 Route::get('/logout/confirm', [LogoutConfirmController::class, 'show'])->name('logout.confirm');
 Route::post('/logout', [LogoutConfirmController::class, 'logout'])->name('logout'); // sobrescribe si hace falta
@@ -107,31 +111,23 @@ Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.
 Route::get('/ver-resultados', [ResultadosController::class, 'index'])->name('ver-resultados');
 Route::get('/portal', [HomeController::class, 'index'])->name('portal.home');
 Route::get('/portal/resultados', [ResultadosController::class, 'index'])->name('portal.resultados.index');
-// 📄 Resultados por especialidad (RX, LAB, ECO, etc.)
 Route::get('/portal/resultados/especialidad/{esp}', [ResultadosController::class, 'porEspecialidad'])
         ->where('esp', '[A-Za-z]+')
         ->name('portal.resultados.especialidad');
-// 📄 Detalle de un resultado individual
 Route::get('/portal/resultados/{gestion}', [ResultadosController::class, 'show'])
         ->whereNumber('gestion')
         ->name('portal.resultados.show');
-// 📄 Descarga o visualización del PDF del informe
 Route::get('/portal/resultados/{gestion}/pdf', [ResultadosController::class, 'pdf'])
         ->whereNumber('gestion')
         ->name('portal.resultados.pdf');
-    // (Opcional) 🔎 Viewer / PACS
-    Route::get('/portal/resultados/{gestion}/viewer', [ResultadosController::class, 'viewer'])
+Route::get('/portal/resultados/{gestion}/viewer', [ResultadosController::class, 'viewer'])
         ->whereNumber('gestion')
         ->name('portal.resultados.viewer');
-// 📅 Citas médicas
-Route::get('/portal/citas', [CitasController::class, 'index'])->name('portal.citas.index');
-// 📋 licencias médicas
-Route::get('/portal/licencias', [LicenciasController::class, 'index'])->name('portal.licencias.index');
-// 💊 Recetas médicas
-Route::get('/portal/recetas', [RecetasController::class, 'index'])->name('portal.recetas.index');
-// Ej: /portal/recetas
-Route::post('/portal/controles/store', [ControlesController::class, 'store'])->name('portal.controles.store');
 
+Route::get('/portal/citas', [CitasController::class, 'index'])->name('portal.citas.index');
+Route::get('/portal/licencias', [LicenciasController::class, 'index'])->name('portal.licencias.index');
+Route::get('/portal/recetas', [RecetasController::class, 'index'])->name('portal.recetas.index');
+Route::post('/portal/controles/store', [ControlesController::class, 'store'])->name('portal.controles.store');
 Route::post('/password/update', [UserPasswordController::class, 'update'])->name('password.update');
 
 Route::get('/portal/noticias', [PortalNoticiasController::class, 'index'])->name('portal.noticias.index');
@@ -178,8 +174,14 @@ Route::get('/agenda/{id}/eventos-visibles', [AgendaPacienteController::class, 'a
     ->name('agenda.eventos-visibles');
 Route::get('/admin/auditoria/login-intentos', [\App\Http\Controllers\Admin\LoginAuditController::class,'index'])
   ->name('admin.login.audit');
-  Route::get('/necesitas-ayuda', [App\Http\Controllers\LoginHelpAdvisor::class, 'index'])
-    ->name('portal.need-help');
+Route::post('/session/keepalive', [SessionController::class, 'keepAlive'])->name('session.keepalive');
+    Route::get('/documents', [UserDocumentController::class, 'index'])->name('documents.index');
+    Route::post('/documents', [UserDocumentController::class, 'store'])->name('documents.store');
+    Route::get('/documents/{document}/download', [UserDocumentController::class, 'download'])->name('documents.download');
+    Route::put('/documents/{document}', [UserDocumentController::class, 'update'])->name('documents.update');
+    Route::delete('/documents/{document}', [UserDocumentController::class, 'destroy'])->name('documents.destroy');
+Route::get('/portal/historial-medico', [UserDocumentController::class, 'indexPage'])->name('portal.historial.index');
+Route::get('/portal/historial-medico/agregar', [UserDocumentController::class, 'createPage'])->name('portal.historial.create');
 });
 /*
 |--------------------------------------------------------------------------
@@ -389,7 +391,10 @@ Route::patch ('/admin/citas/{cita}/reservada', [CitaController::class, 'reservad
 Route::get('/admin/login-logs', [LoginLogController::class, 'index'])->name('admin.login_logs.index');
 Route::get('/admin/auditoria-logins', [AuditoriaLoginController::class, 'index'])
     ->name('admin.auditoria-logins');
-
+    Route::get('/other-settings',  [OtherSettingController::class, 'edit'])->name('other-settings.edit');
+    Route::post('/other-settings', [OtherSettingController::class, 'update'])->name('other-settings.update');
+    Route::get('/admin/users/{userId}/documents', [UserDocumentController::class, 'indexForUser'])
+        ->name('admin.users.documents.index');
 
 
     });

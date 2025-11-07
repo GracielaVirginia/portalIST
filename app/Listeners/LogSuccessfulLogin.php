@@ -7,21 +7,19 @@ use Illuminate\Support\Facades\DB;
 
 class LogSuccessfulLogin
 {
-    /**
-     * Maneja el evento de inicio de sesión exitoso.
-     *
-     * @param  \Illuminate\Auth\Events\Login  $event
-     * @return void
-     */
-    public function handle(Login $event)
+    public function handle(Login $event): void
     {
         $user = $event->user;
 
         DB::table('login_log')->insert([
-            'user_id'    => $user->id,
-            'ip_address' => request()->ip(),
-            'user_agent' => request()->userAgent(),
-            'logged_in_at' => now(),
+            'user_id'       => $user->id,
+            'ip_address'    => request()->ip(),
+            'user_agent'    => request()->userAgent(),
+            'session_id'    => session()->getId(),
+            'logged_in_at'  => now(),
+            'last_seen_at'  => now(),
+            'created_at'    => now(),
+            'updated_at'    => now(),
         ]);
     }
 }

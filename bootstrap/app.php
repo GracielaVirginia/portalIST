@@ -16,6 +16,8 @@ return Application::configure(basePath: dirname(__DIR__))
 
 $middleware->alias([
     'admin.auth' => \App\Http\Middleware\EnsureAdminAuthenticated::class,
+     'update.activity' => \App\Http\Middleware\UpdateLoginActivity::class,
+       'must.be.validated' => \App\Http\Middleware\EnsureUserIsValidated::class,
 ]);
 
     })

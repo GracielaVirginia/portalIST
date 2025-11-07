@@ -107,13 +107,7 @@
                                     Sesiones usuarios registrados
                                 </span>
                             </a>
-                            <a href="{{ route('admin.login_logs.index') }}"
-                                class="{{ $linkBase }} {{ $linkText }} hover:bg-purple-900 dark:hover:bg-purple-800 hover:text-white">
-                                <span class="inline-flex items-center gap-2">
-                                    <span class="h-2 w-2 rounded-full bg-purple-700 group-hover:bg-white"></span>
-                                    Auditorias
-                                </span>
-                            </a>
+
                         </div>
                     </div>
                 </div>
@@ -238,7 +232,13 @@
                         <span class="{{ $badgeBase }}">{{ $valids }}</span>
                     @endif
                 </a>
-
+{{-- <a href="{{ route('other-settings.edit') }}"
+   class="{{ $linkBase }} {{ $linkText }} {{ $linkHover }}">
+  <span class="inline-flex items-center gap-2">
+    <span class="{{ $dotBase }}"></span>
+    <span class="pl-1">⚙️ Configuración del Portal</span>
+  </span>
+</a> --}}
             </div>
         </div>
         {{-- ================= /BLOQUE MORADO ================= --}}

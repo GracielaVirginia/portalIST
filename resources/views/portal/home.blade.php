@@ -39,6 +39,7 @@
         {{-- ===================== KPIs ===================== --}}
         <div class="mt-6" id="tour-kpis">
             <x-portal.kpis :kpis="$kpis" />
+
         </div>
 
         {{-- ===================== LAYOUT PRINCIPAL ===================== --}}
@@ -174,7 +175,7 @@ Aquí está <b>Mis controles</b>. Presiona para agregar Peso, Tensión o Glucosa
                         steps.push({
                             element: '#tour-sidebar',
                             position: 'right',
-                            intro: "En este menú verás <b>todos tus resultados</b> y accesos por especialidad. Es el lugar más usado."
+                            intro: "En este menú verás <b>todos tus resultados</b> y accesos por especialidad. Es el lugar más usado. Podras ver tu Historial Médico y subir documentos. "
                         });
                     }
 

@@ -60,16 +60,16 @@
 <button id="modoFacil"
   type="button"
   aria-pressed="false"
-  class="w-full sm:w-auto px-4 py-3 text-base font-semibold rounded-full
-         bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white
-         shadow-md hover:shadow-lg hover:from-violet-700 hover:to-fuchsia-700
-         focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-violet-400
-         dark:from-violet-600 dark:to-fuchsia-600 dark:hover:from-violet-700 dark:hover:to-fuchsia-700
-         transition-all duration-200 ease-in-out">
-  <span class="block leading-tight">
+class="w-full sm:w-auto px-3 py-2 text-sm font-semibold rounded-full
+       bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white
+       shadow-md hover:shadow-sm hover:from-violet-700 hover:to-fuchsia-700
+       focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-violet-400
+       dark:from-violet-600 dark:to-fuchsia-600 dark:hover:from-violet-700 dark:hover:to-fuchsia-700
+       transition-all duration-200 ease-in-out">
+         <span class="block leading-tight">
     <span class="block" data-label>Activar modo fácil</span>
     <span class="block text-white/90 text-xs font-normal">
-      <strong data-state>Desactivado</strong>
+      {{-- <strong data-state>Desactivado</strong> --}}
     </span>
   </span>
 </button>
@@ -112,32 +112,36 @@ document.getElementById('modoFacil').addEventListener('click', () => {
     @yield('content')
   </main>
 
-  {{-- ===== Footer ===== --}}
-  <footer class="fixed bottom-0 left-0 w-full z-40">
-    <div class="mx-auto max-w-7xl px-4 py-3
-                flex flex-col sm:flex-row items-center justify-center sm:justify-between gap-2
-                bg-purple-100/90 dark:bg-gray-900/90 backdrop-blur
-                border-t border-purple-200/60 dark:border-gray-800
-                text-purple-900 dark:text-gray-200">
+<footer class="absolute z-20" id="draggableFooter"
+        style="left: 20px; bottom: 20px;">
+  <div class="max-w-xl px-4 py-3
+              flex flex-col sm:flex-row items-center justify-center sm:justify-between gap-2
+              bg-purple-100/90 dark:bg-gray-900/90 backdrop-blur
+              border border-purple-200/60 dark:border-gray-800
+              text-purple-900 dark:text-gray-200 rounded-lg shadow-lg">
 
-      <p class="text-sm">
-        Versión 3.0.0 · &copy; {{ date('Y') }} Todos los derechos reservados.
-      </p>
+    <!-- Grip en esquina superior izquierda (opcional, o puedes usar todo el footer) -->
+    <div id="footerGrip"
+         class="absolute -top-2 -left-2 w-4 h-4 cursor-grab active:cursor-grabbing
+                bg-purple-500/70 dark:bg-gray-600 rounded-full"></div>
 
-      <div class="flex items-center gap-3">
-        {{-- Ayuda (abre modal) --}}
-        <a href="#" id="btnAyuda"
-           @click.prevent="helpOpen = true"
-           class="inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-sm font-semibold
-                  bg-white text-purple-900 border border-purple-200
-                  hover:bg-purple-50 hover:border-purple-300
-                  dark:bg-gray-800 dark:text-gray-100 dark:border-gray-700 dark:hover:bg-gray-700">
-          <span aria-hidden="true">🛈</span>
-          <span>Ayuda</span>
-        </a>
-      </div>
+    <p class="text-sm">
+      Versión 1.0.0 · &copy; {{ date('Y') }} Todos los derechos reservados.
+    </p>
+
+    <div class="flex items-center gap-3">
+      <a href="#" id="btnAyuda"
+         @click.prevent="helpOpen = true"
+         class="inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-sm font-semibold
+                bg-white text-purple-900 border border-purple-200
+                hover:bg-purple-50 hover:border-purple-300
+                dark:bg-gray-800 dark:text-gray-100 dark:border-gray-700 dark:hover:bg-gray-700">
+        <span aria-hidden="true">🛈</span>
+        <span>Ayuda</span>
+      </a>
     </div>
-  </footer>
+  </div>
+</footer>
 
   {{-- Mantengo tus componentes --}}
   {{-- @include('components.portal.chat-box') --}}
@@ -343,7 +347,78 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 </script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const footer = document.getElementById('draggableFooter');
+  const grip = document.getElementById('footerGrip') || footer; // usa el grip o todo el footer
 
+  if (!footer) return;
+
+  let isDragging = false;
+  let startX, startY;
+  let startLeft, startTop;
+
+  // Obtener posición inicial en pantalla
+  const rect = footer.getBoundingClientRect();
+  footer.style.position = 'absolute';
+  footer.style.left = rect.left + 'px';
+  footer.style.top = rect.top + 'px';
+
+  const startDrag = (e) => {
+    isDragging = true;
+    startX = e.clientX || e.touches?.[0].clientX || 0;
+    startY = e.clientY || e.touches?.[0].clientY || 0;
+
+    const computed = getComputedStyle(footer);
+    startLeft = parseFloat(computed.left);
+    startTop = parseFloat(computed.top);
+
+    footer.style.cursor = 'grabbing';
+    if (grip) grip.classList.add('opacity-60');
+    e.preventDefault();
+  };
+
+  const onDrag = (e) => {
+    if (!isDragging) return;
+
+    const dx = (e.clientX || e.touches?.[0].clientX || 0) - startX;
+    const dy = (e.clientY || e.touches?.[0].clientY || 0) - startY;
+
+    let newLeft = startLeft + dx;
+    let newTop = startTop + dy;
+
+    // Límites: no salir de la ventana
+    const footerRect = footer.getBoundingClientRect();
+    const maxX = window.innerWidth - footerRect.width;
+    const maxY = window.innerHeight - footerRect.height;
+
+    newLeft = Math.max(0, Math.min(newLeft, maxX));
+    newTop = Math.max(0, Math.min(newTop, maxY));
+
+    footer.style.left = `${newLeft}px`;
+    footer.style.top = `${newTop}px`;
+  };
+
+  const stopDrag = () => {
+    if (isDragging) {
+      isDragging = false;
+      footer.style.cursor = '';
+      if (grip) grip.classList.remove('opacity-60');
+    }
+  };
+
+  // Eventos para mouse
+  grip.addEventListener('mousedown', startDrag);
+  document.addEventListener('mousemove', onDrag);
+  document.addEventListener('mouseup', stopDrag);
+
+  // Opcional: soporte táctil (para móviles/tablets)
+  grip.addEventListener('touchstart', startDrag, { passive: false });
+  document.addEventListener('touchmove', onDrag, { passive: false });
+  document.addEventListener('touchend', stopDrag);
+});
+
+</script>
 <script src="{{ asset('js/app.js') }}"></script>
 @stack('scripts')
 </body>

@@ -15,3 +15,4 @@ import './admin/tickets-index';
 import './admin/unregistered-email.js';
 import './admin/unregistered-rut.js';
 import './admin/richtext';
+import "./session-timeout.js";

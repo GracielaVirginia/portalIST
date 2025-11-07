@@ -59,7 +59,7 @@
       @yield('admin')
     </main>
 
-    {{-- ===== Footer compacto admin ===== --}}
+    {{-- ===== Footer compacto admin ===== 
     <footer class="fixed bottom-0 left-0 w-full z-40">
       <div class="mx-auto max-w-7xl px-4 py-3
                   flex flex-col sm:flex-row items-center justify-center sm:justify-between gap-2
@@ -77,7 +77,7 @@
           </a>
         </div>
       </div>
-    </footer>
+    </footer>--}}
 
     {{-- Bot / otros --}}
     <x-portal.assistant-bot />
@@ -139,6 +139,14 @@
       window.AdminSkeleton = { show, hide };
     })();
   </script>
+<script>
+  window.LaravelSessionLifetime = @json(config('session.lifetime', 20));
+  window.keepaliveUrl = @json(route('session.keepalive'));
+  window.logoutUrl = @json(route('logout'));
+  window.csrfToken = @json(csrf_token());
+</script>
+
+@vite(['resources/js/app.js'])
 
   {{-- Tu app.js si lo necesitas aparte --}}
   <script src="{{ asset('js/app.js') }}"></script>

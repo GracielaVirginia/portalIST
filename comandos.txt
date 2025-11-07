@@ -12,3 +12,9 @@ php artisan optimize
 git add .
 git commit -m "mensaje" 
 git push 
+
+poner en modo mantenimiento 
+php artisan down
+php artisan down --secret="puedopasar"
+quitarlo
+php artisan up

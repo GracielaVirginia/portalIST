@@ -56,7 +56,7 @@ class LoginLogController extends Controller
         $uniqueUsers = LoginLog::whereBetween('logged_in_at', [$from, $to])->distinct('user_id')->count('user_id');
 
         // Tabla (JOIN users para mostrar nombre/email)
-        $logs = LoginLog::with(['user:id,name,email'])
+        $logs = LoginLog::with(['user:id,name,rut'])
             ->whereBetween('logged_in_at', [$from, $to])
             ->orderByDesc('logged_in_at')
             ->paginate(50)
