@@ -8,16 +8,27 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
+use App\Services\AlertaService;
+use App\Models\User;
+use App\Observers\UserObserver;
 
 class AppServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
-        //
+          $this->app->singleton(AlertaService::class, fn() => new AlertaService());
     }
 
     public function boot(): void
     {
+                /*
+        |----------------------------------------------------------------------
+        | A) Registrar Observer de User (IMPORTANTE: al inicio de boot)
+        |----------------------------------------------------------------------
+        | Así se ejecuta SIEMPRE, incluso si luego sales con 'return' al
+        | detectar algunos comandos de consola.
+        */
+        User::observe(UserObserver::class);
         /*
         |--------------------------------------------------------------------------
         | 1) Directiva @safeVite (tu código original, intacto)

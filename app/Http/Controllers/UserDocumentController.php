@@ -10,12 +10,11 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\DB;
-
+use Illuminate\Validation\ValidationException;
+use Illuminate\Database\QueryException;
 class UserDocumentController extends Controller
 {
-    /**
-     * Lista documentos del usuario autenticado (filtros opcionales).
-     */
+
     public function index(Request $request)
     {
         $user = $request->user();
@@ -30,11 +29,6 @@ class UserDocumentController extends Controller
         // Devuelvo JSON (si prefieres vista blade, cámbialo a return view(...))
         return response()->json($docs);
     }
-
-    /**
-     * (Admin) Lista documentos de un usuario por ID.
-     * Protege esta ruta con tu middleware 'admin.auth'.
-     */
     public function indexForUser(Request $request, $userId)
     {
         $docs = UserDocument::where('user_id', $userId)
@@ -45,47 +39,78 @@ class UserDocumentController extends Controller
 
         return response()->json($docs);
     }
+public function store(Request $request)
+{
+    $user = $request->user();
 
-    /**
-     * Sube un nuevo documento para el usuario autenticado.
-     */
-    public function store(Request $request)
-    {
-        $user = $request->user();
+    // Tipos permitidos (ajusta a tu necesidad)
+    $extAllowed  = ['pdf','jpg','jpeg','png','webp','doc','docx','xls','xlsx','csv'];
+    $mimeAllowed = [
+        'application/pdf',
+        'image/jpeg','image/png','image/webp',
+        'application/msword',
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        'application/vnd.ms-excel',
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        'text/csv',
+    ];
 
+    try {
+        // Validación (max está en KB → 20480 = 20MB)
         $validated = $request->validate([
-            'file'        => ['required', 'file', 'max:20480'], // 20MB por ejemplo
-            'cita_id'     => ['nullable', 'integer', 'exists:citas,id'],
-            'category'    => ['nullable', 'string', 'max:100'],
-            'label'       => ['nullable', 'string', 'max:150'],
-            'description' => ['nullable', 'string'],
-            'meta'        => ['nullable', 'array'],
-            'disk'        => ['nullable', 'string', 'max:50'], // opcional: permitir indicar disk
+            'file'        => ['required','file','max:20480',"mimes:".implode(',',$extAllowed),"mimetypes:".implode(',',$mimeAllowed)],
+            'cita_id'     => ['nullable','integer','exists:citas,id'],
+            'category'    => ['nullable','string','max:100'],
+            'label'       => ['nullable','string','max:150'],
+            'description' => ['nullable','string'],
+            'meta'        => ['nullable','array'],
+            'disk'        => ['nullable','string','max:50'],
         ]);
+    } catch (ValidationException $e) {
+        // Mensaje más claro para usuarios
+        $msg = 'El archivo no cumple los requisitos.';
+        if ($e->validator->errors()->has('file')) {
+            $err = $e->validator->errors()->first('file');
+            if (str_contains($err, 'max'))   { $msg = 'El archivo supera el tamaño máximo permitido (20 MB).'; }
+            if (str_contains($err, 'mimes')) { $msg = 'Tipo de archivo no permitido. Sube PDF, imagen o documento de Office.'; }
+        }
 
-        $disk = $validated['disk'] ?? 'public';
-        $file = $validated['file'];
+        if ($request->expectsJson()) {
+            return response()->json(['ok'=>false,'reason'=>'validation','errors'=>$e->errors(),'message'=>$msg], 422);
+        }
+        return back()->withErrors($e->errors())->with('error', $msg)->withInput();
+    }
 
-        // Generar path consistente: users/{user_id}/docs/{uuid}.{ext}
-        $ext = $file->getClientOriginalExtension();
-        $uuid = (string) Str::uuid();
-        $baseDir = "users/{$user->id}/docs";
-        $filename = $uuid . ($ext ? ('.' . strtolower($ext)) : '');
-        $path = "{$baseDir}/{$filename}";
+    $disk = $validated['disk'] ?? 'public';
+    $file = $validated['file'];
 
-        // Guardar archivo
-        Storage::disk($disk)->put($path, file_get_contents($file->getRealPath()));
+    try {
+        // Directorio y nombre consistente
+        $ext      = strtolower($file->getClientOriginalExtension() ?: '');
+        $uuid     = (string) Str::uuid();
+        $baseDir  = "users/{$user->id}/docs";
+        $filename = $ext ? "{$uuid}.{$ext}" : $uuid;
 
-        // Guardar registro
-        $doc = UserDocument::create([
+        // Guarda de forma eficiente (streaming)
+        // Equivalente a put($path, file_get_contents(...)) pero más seguro/performante
+        $storedPath = Storage::disk($disk)->putFileAs($baseDir, $file, $filename);
+
+        // Metadatos
+        $original  = $file->getClientOriginalName();
+        $mime      = $file->getClientMimeType();
+        $size      = $file->getSize();
+        $hash      = @md5_file($file->getRealPath()) ?: null;
+
+        // Registro en BD
+        $doc = \App\Models\UserDocument::create([
             'user_id'       => $user->id,
             'cita_id'       => $validated['cita_id'] ?? null,
             'disk'          => $disk,
-            'path'          => $path,
-            'original_name' => $file->getClientOriginalName(),
-            'mime_type'     => $file->getClientMimeType(),
-            'size'          => $file->getSize(),
-            'hash_md5'      => @md5_file($file->getRealPath()) ?: null,
+            'path'          => $storedPath, // p.ej. users/{id}/docs/{uuid}.pdf
+            'original_name' => $original,
+            'mime_type'     => $mime,
+            'size'          => $size,
+            'hash_md5'      => $hash,
             'category'      => $validated['category'] ?? null,
             'label'         => $validated['label'] ?? null,
             'description'   => $validated['description'] ?? null,
@@ -93,15 +118,29 @@ class UserDocumentController extends Controller
             'is_reviewed'   => false,
         ]);
 
-        return response()->json([
-            'success' => true,
-            'document' => $doc,
-        ], 201);
-    }
+return response()->json([
+    'ok'           => true,
+    'message'      => 'Documento subido correctamente.',
+    'document'     => $doc,
+    'redirect_url' => route('portal.historial.index'), // <- clave para redirigir desde fetch
+], 201);
 
-    /**
-     * Descarga el documento (del owner o admin).
-     */
+
+        return back()->with('success', 'Documento subido correctamente.');
+
+    } catch (QueryException $e) {
+        if ($request->expectsJson()) {
+            return response()->json(['ok'=>false,'reason'=>'db','message'=>'No pudimos guardar el registro del documento.'], 500);
+        }
+        return back()->with('error', 'No pudimos guardar el registro del documento.')->withInput();
+    } catch (\Throwable $e) {
+        // Fallo de disco, permisos, etc.
+        if ($request->expectsJson()) {
+            return response()->json(['ok'=>false,'reason'=>'unexpected','message'=>'Ocurrió un error al subir el archivo.'], 500);
+        }
+        return back()->with('error', 'Ocurrió un error al subir el archivo.')->withInput();
+    }
+}
     public function download(Request $request, UserDocument $document)
     {
         $this->authorizeDoc($request->user(), $document);
@@ -116,9 +155,6 @@ class UserDocumentController extends Controller
         );
     }
 
-    /**
-     * Actualiza metadatos del documento y (opcional) reemplaza el archivo.
-     */
     public function update(Request $request, UserDocument $document)
     {
         $this->authorizeDoc($request->user(), $document);
@@ -172,22 +208,15 @@ class UserDocumentController extends Controller
         return response()->json(['success' => true, 'document' => $document->fresh()]);
     }
 
-    /**
-     * Elimina el documento (registro + archivo físico por hook del modelo).
-     */
     public function destroy(Request $request, UserDocument $document)
     {
         $this->authorizeDoc($request->user(), $document);
 
         $document->delete();
 
-        return response()->json(['success' => true]);
-    }
-
-    /**
-     * Autorización básica: dueño del doc o admin.
-     * Ajusta esta lógica si tu app tiene roles diferentes.
-     */
+    return redirect()
+        ->route('portal.historial.index')
+        ->with('success', 'Archivo eliminado correctamente.');    }
     private function authorizeDoc(?\App\Models\User $actor, UserDocument $document): void
     {
         if (!$actor) {
@@ -202,7 +231,7 @@ class UserDocumentController extends Controller
             abort(403, 'No tienes permiso para acceder a este documento.');
         }
     }
-public function indexPage(Request $request)
+    public function indexPage(Request $request)
 {
     $user = $request->user();
 
@@ -231,7 +260,6 @@ public function indexPage(Request $request)
 
 public function createPage()
 {
-    // Solo muestra la vista con el componente de subir
     return view('portal.historial.create');
 }
 

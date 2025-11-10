@@ -55,10 +55,21 @@
 
   @if($list->isEmpty())
     <div class="px-4 sm:px-5 py-6">
-      <div class="rounded-xl border border-dashed border-purple-900/30 dark:border-purple-300/30
-                  bg-purple-50 dark:bg-purple-950/30 p-4 text-sm text-purple-900 dark:text-purple-100">
-        Por ahora no hay sugerencias. Cuando detectemos controles pendientes o chequeos preventivos, aparecerán aquí.
-      </div>
+<div class="rounded-xl border border-dashed border-purple-900/30 dark:border-purple-200/30
+            bg-purple-50 dark:bg-purple-950/20 p-5 text-sm text-purple-900 dark:text-purple-200
+            text-left max-w-2xl mx-auto space-y-3">
+  <p><strong>1. Agrega tus datos del día</strong><br>
+     Haz clic en el botón <strong>“Agregar”</strong> y escribe tu presión, peso y glucosa.</p>
+
+  <p><strong>2. Guarda la información</strong><br>
+     Una vez que hayas escrito todo, presiona <strong>“Guardar”</strong>.</p>
+
+  <p><strong>3. Mira tus resultados</strong><br>
+     Haz clic en <strong>“Calcular resultados”</strong>, elige las fechas con el filtro y verás una gráfica con tus valores.</p>
+
+  <p><strong>4. Descarga tu informe</strong><br>
+     Si todo está bien, presiona <strong>“Generar PDF”</strong>. El archivo se guardará en tu carpeta de <strong>Descargas</strong>.</p>
+</div>
     </div>
   @else
     <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4 p-4 sm:p-5">

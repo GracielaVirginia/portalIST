@@ -11,40 +11,39 @@ return new class extends Migration
         Schema::create('login_attempts', function (Blueprint $table) {
             $table->id();
 
-            // Si se identificó a qué usuario corresponde el RUT/email, se llena; si no, queda NULL
-            $table->foreignId('user_id')
-                ->nullable()
-                ->constrained('users')
-                ->nullOnDelete(); // si borras el usuario, conservamos el intento
+            // Usuario autenticado (si aplica)
+            $table->foreignId('user_id')->nullable()->constrained()->nullOnDelete();
 
-            // Lo que el usuario escribió en el campo de login (RUT, email, etc.)
-            $table->string('login_input', 120)->index();
+            // Documento con el que intentó (RUT / Pasaporte / Email, etc.)
+            $table->string('login_input', 100)->nullable()->index();
 
-            // Metadatos de la solicitud
-            $table->string('ip_address', 45)->index();    // IPv4/IPv6
+            // Técnica
+            $table->string('ip_address', 45)->nullable()->index(); // IPv4/IPv6
             $table->string('user_agent', 255)->nullable();
 
-            // Resultado del intento
-            $table->enum('outcome', [
-                'success',          // autenticación correcta
-                'user_not_found',   // no existe paciente/usuario para ese login_input
-                'invalid_password', // usuario encontrado pero clave incorrecta
-                'blocked',          // intento rechazado por bloqueo (rate limit / política)
-            ])->index();
+            /**
+             * Resultado del evento:
+             * - visit
+             * - verify_found | verify_not_found
+             * - invalid_password | user_not_found | blocked
+             * - success  (login OK, antes de validación)
+             * - validation_failed | validation_blocked
+             * - portal_access (llegó a portal.home)
+             */
+            $table->string('outcome', 50)->index();
 
-            // Contador del intento (útil para auditoría: intento #N para ese login_input en la ventana que definas)
-            $table->unsignedSmallInteger('attempt_number')->default(1);
+            // Correlativo del intento (útil para auditoría)
+            $table->unsignedInteger('attempt_number')->default(1);
 
-            // Estado de bloqueo en el momento del intento
-            $table->boolean('is_blocked')->default(false)->index();
+            // Bloqueo (login o validación)
+            $table->boolean('is_blocked')->default(false);
             $table->timestamp('blocked_at')->nullable();
 
-            $table->timestamps(); // created_at = fecha del intento; updated_at por si ajustas algo luego
+            $table->timestamps();
 
-            // Índices útiles para consultas típicas
-            $table->index(['login_input', 'created_at'], 'attempts_login_created_idx');
-            $table->index(['user_id', 'created_at'], 'attempts_user_created_idx');
-            $table->index(['ip_address', 'created_at'], 'attempts_ip_created_idx');
+            // Índices compuestos típicos de consulta
+            $table->index(['login_input', 'created_at']);
+            $table->index(['outcome', 'created_at']);
         });
     }
 

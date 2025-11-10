@@ -171,28 +171,51 @@ function uploadDocSimple() {
     },
     clearFile(){ this.file=null; this.$refs.file.value=''; },
     humanSize(b){ if(b==null) return ''; const u=['B','KB','MB','GB']; let i=0; while(b>=1024&&i<u.length-1){ b/=1024;i++; } return b.toFixed(1)+' '+u[i]; },
-    async submit(){
-      if(!this.canSubmit) return;
-      this.loading=true; this.error='';
-      try{
-        const form=new FormData();
-        form.append('_token','{{ csrf_token() }}');
-        form.append('file', this.file);
-        if(this.category) form.append('category', this.category);
-        if(this.label) form.append('label', this.label);
-        if(this.description) form.append('description', this.description);
+async submit(){
+  if(!this.canSubmit) return;
+  this.loading=true; this.error='';
+  try{
+    const form=new FormData();
+    form.append('_token','{{ csrf_token() }}');
+    form.append('file', this.file);
+    if(this.category) form.append('category', this.category);
+    if(this.label) form.append('label', this.label);
+    if(this.description) form.append('description', this.description);
 
-        const res=await fetch(`{{ route('documents.store') }}`, {
-          method:'POST', headers:{'X-Requested-With':'XMLHttpRequest'}, body:form
-        });
-        if(!res.ok){ const data=await res.json().catch(()=>({})); this.error=data.message||'No se pudo subir el documento.'; this.loading=false; return; }
+    const res = await fetch(`{{ route('documents.store') }}`, {
+      method:'POST',
+      headers:{ 'X-Requested-With':'XMLHttpRequest', 'Accept':'application/json' },
+      body:form
+    });
 
-        // ok
-        this.loading=false; this.open=false;
-        this.clearFile(); this.category=''; this.label=''; this.description='';
-        document.dispatchEvent(new CustomEvent('document:uploaded'));
-      }catch(e){ this.loading=false; this.error='Error de red. Intenta nuevamente.'; }
+    // Si vino un error HTTP, intenta mostrar el mensaje del backend
+    if(!res.ok){
+      let data = {};
+      try { data = await res.json(); } catch(_e){}
+      this.error = data.message || 'No se pudo subir el documento.';
+      this.loading=false;
+      return;
     }
+
+    // Éxito: parsea JSON y decide si redirigir
+    let data = {};
+    try { data = await res.json(); } catch(_e) { data = {}; }
+
+    // Si el backend envía redirect_url, navega (cambia de página de verdad)
+    if (data.redirect_url) {
+      window.location.href = data.redirect_url;
+      return; // corta aquí; el unload cancela lo demás
+    }
+
+    // Si no hay redirect_url, mantén el comportamiento anterior (cerrar modal + evento)
+    this.loading=false; this.open=false;
+    this.clearFile(); this.category=''; this.label=''; this.description='';
+    document.dispatchEvent(new CustomEvent('document:uploaded', { detail: data.document || null }));
+  }catch(e){
+    this.loading=false;
+    this.error='Error de red. Intenta nuevamente.';
+  }
+}
   }
 }
 </script>

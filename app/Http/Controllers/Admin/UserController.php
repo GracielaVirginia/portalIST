@@ -153,38 +153,33 @@ public function unregisteredData(Request $request)
         $length = (int) $request->input('length', 10);
         $search = trim((string) $request->input('search.value', ''));
 
-        // Columnas visibles en DataTables (subquery alias "t")
+        // Columnas para ordenamiento (índices de DataTables)
         $columns = [
             0 => 'numero_documento',
             1 => 'nombre_paciente',
             2 => 'email',
             3 => 'telefono',
             4 => 'dia',
-            5 => 'gestiones',
+            5 => 'numero_caso', // ✅ ahora ordenamos por número de caso, no por "gestiones" confuso
         ];
+
         $orderColIdx = (int) $request->input('order.0.column', 0);
         $orderDir    = $request->input('order.0.dir', 'asc') === 'desc' ? 'desc' : 'asc';
         $orderCol    = $columns[$orderColIdx] ?? 'numero_documento';
 
-        // Día clínico: usa fecha_solicitud si existe, si no created_at
+        // Expresión para el día clínico
         $diaExpr = DB::raw("DATE(COALESCE(g.fecha_solicitud, g.created_at))");
 
-        // Base: pacientes que NO están en users.rut
-        // AGRUPADO SOLO por doc + día. Campos “de presentación” con agregados.
+        // 🔥 Base: TODOS los registros de gestiones_salud_completa (sin JOIN con users)
         $base = DB::table('gestiones_salud_completa as g')
-            ->leftJoin('users as u', 'u.rut', '=', 'g.numero_documento')
-            ->whereNull('u.id')
             ->groupBy('g.numero_documento', $diaExpr)
-            ->select([
-                'g.numero_documento',
-            ])
+            ->select(['g.numero_documento'])
             ->selectRaw('MIN(COALESCE(g.nombre_paciente, "")) as nombre_paciente')
             ->selectRaw('MIN(COALESCE(g.email, ""))           as email')
             ->selectRaw('MIN(COALESCE(g.telefono, ""))        as telefono')
             ->selectRaw('DATE(COALESCE(g.fecha_solicitud, g.created_at)) as dia')
-            ->selectRaw('COUNT(*) as gestiones')
-            ->selectRaw('MIN(COALESCE(g.numero_caso, ""))        as numero_caso')
-            // Detalles de ese día: todas las gestiones concatenadas
+            ->selectRaw('COUNT(*) as gestiones_count') // ✅ conteo real (opcional)
+            ->selectRaw('MIN(COALESCE(g.numero_caso, "")) as numero_caso')
             ->selectRaw("
                 GROUP_CONCAT(
                     CONCAT(
@@ -201,9 +196,10 @@ public function unregisteredData(Request $request)
         // Totales
         $recordsTotal = DB::query()->fromSub($base, 't')->count();
 
-        // Subquery para buscar/ordenar por alias
+        // Subquery para búsqueda y paginación
         $sub = DB::query()->fromSub($base, 't');
 
+        // Búsqueda en campos relevantes (incluyendo numero_caso)
         if ($search !== '') {
             $sub->where(function ($q) use ($search) {
                 $q->where('t.numero_documento', 'like', "%{$search}%")
@@ -211,6 +207,7 @@ public function unregisteredData(Request $request)
                   ->orWhere('t.email', 'like', "%{$search}%")
                   ->orWhere('t.telefono', 'like', "%{$search}%")
                   ->orWhere('t.dia', 'like', "%{$search}%")
+                  ->orWhere('t.numero_caso', 'like', "%{$search}%")
                   ->orWhere('t.detalles_str', 'like', "%{$search}%");
             });
         }
@@ -223,18 +220,19 @@ public function unregisteredData(Request $request)
             ->take($length)
             ->get();
 
+        // Mapeo de resultados
         $data = $rows->map(function ($r) {
-            $detalles = [];
-            if (!empty($r->detalles_str)) {
-                $detalles = array_map('trim', explode(' || ', $r->detalles_str));
-            }
+            $detalles = !empty($r->detalles_str)
+                ? array_map('trim', explode(' || ', $r->detalles_str))
+                : [];
+
             return [
                 'numero_documento' => $r->numero_documento,
                 'nombre_paciente'  => $r->nombre_paciente,
                 'email'            => $r->email,
                 'telefono'         => $r->telefono,
                 'dia'              => $r->dia,
-                'gestiones'        => (int) $r->numero_caso,
+                'gestiones'        => $r->numero_caso, // ✅ ahora 'gestiones' muestra el número de caso (como en tu UI)
                 'detalles'         => $detalles,
                 'primera_fecha'    => $this->safeDateTime($r->primera_fecha),
             ];
@@ -259,11 +257,10 @@ public function unregisteredData(Request $request)
             'recordsTotal'    => 0,
             'recordsFiltered' => 0,
             'data'            => [],
-            'error'           => 'Error al agrupar los usuarios no registrados.',
+            'error'           => 'Error al obtener los datos.',
         ], 200, [], JSON_UNESCAPED_UNICODE);
     }
 }
-
 
     /* =========================
      * HELPERS
@@ -583,7 +580,8 @@ public function toggleBlock($id)
         $user->save();
 
         return response()->json([
-            'success'         => true,
+            'ok'         => true,
+'message' => 'Usuario desbloqueado correctamente.',
             'id'         => $user->id,
             'is_blocked' => (int) $user->is_blocked,
         ], 200);

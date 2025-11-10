@@ -64,56 +64,43 @@
             <div class="ml-3 mt-1 rounded-xl bg-purple-100 dark:bg-purple-900/30 p-1.5 space-y-1">
 
                 {{-- Usuarios (con submenú) --}}
-                <div class="relative group/usuarios">
-                    <a href="" class="{{ $linkBase }} {{ $linkText }} {{ $linkHover }}">
-                        <span class="inline-flex items-center gap-2">
-                            <span class="{{ $dotBase }}"></span>
-                            <span class="pl-1">👤 Usuarios</span>
-                        </span>
-                        @if ($users > 0)
-                            <span class="{{ $badgeBase }}">{{ $users }}</span>
-                        @endif
-                    </a>
+<div class="relative group/usuarios" x-data="{ open:false }">
+  <a href="" class="{{ $linkBase }} {{ $linkText }} {{ $linkHover }}" @click.prevent="open = !open">
+    <span class="inline-flex items-center gap-2">
+      <span class="{{ $dotBase }}"></span>
+      <span class="pl-1">👤 Usuarios</span>
+    </span>
+    @if ($users > 0)
+      <span class="{{ $badgeBase }}">{{ $users }}</span>
+    @endif
+  </a>
 
-                    {{-- Popout derecha (sin gap + puente de hover) --}}
-                    <div
-                        class="absolute top-0 left-full z-10 hidden w-64 rounded-xl border border-gray-200 bg-white p-2 shadow-xl
-                   dark:border-gray-700 dark:bg-gray-900
-                   lg:group-hover/usuarios:block group-focus-within/usuarios:block
-                   opacity-0 scale-95 transition
-                   lg:group-hover/usuarios:opacity-100 lg:group-hover/usuarios:scale-100
-                   group-focus-within/usuarios:opacity-100 group-focus-within/usuarios:scale-100
-                   pointer-events-none lg:group-hover/usuarios:pointer-events-auto group-focus-within/usuarios:pointer-events-auto
-                   before:content-[''] before:absolute before:top-0 before:-left-2 before:w-2 before:h-full before:bg-transparent">
-                        <div class="pl-2 space-y-1">
-                            <a href="{{ route('admin.users.registered') }}"
-                                class="{{ $linkBase }} {{ $linkText }} hover:bg-purple-900 dark:hover:bg-purple-800 hover:text-white">
-                                <span class="inline-flex items-center gap-2">
-                                    <span class="h-2 w-2 rounded-full bg-purple-700 group-hover:bg-white"></span>
-                                    Registrados en el portal
-                                </span>
-                            </a>
-                            <a href="{{ route('admin.users.unregistered') }}"
-                                class="{{ $linkBase }} {{ $linkText }} hover:bg-purple-900 dark:hover:bg-purple-800 hover:text-white">
-                                <span class="inline-flex items-center gap-2">
-                                    <span class="h-2 w-2 rounded-full bg-purple-700 group-hover:bg-white"></span>
-                                    No registrados en el portal
-                                </span>
-                            </a>
-                            <a href="{{ route('admin.login_logs.index') }}"
-                                class="{{ $linkBase }} {{ $linkText }} hover:bg-purple-900 dark:hover:bg-purple-800 hover:text-white">
-                                <span class="inline-flex items-center gap-2">
-                                    <span class="h-2 w-2 rounded-full bg-purple-700 group-hover:bg-white"></span>
-                                    Sesiones usuarios registrados
-                                </span>
-                            </a>
+  {{-- Desktop: popout por hover (igual que ya tenías) --}}
+  <div class="hidden lg:block absolute top-0 left-full z-10 w-64 rounded-xl border border-gray-200 bg-white p-2 shadow-xl
+              dark:border-gray-700 dark:bg-gray-900 opacity-0 scale-95 transition pointer-events-none
+              lg:group-hover/usuarios:opacity-100 lg:group-hover/usuarios:scale-100 lg:group-hover/usuarios:pointer-events-auto
+              before:content-[''] before:absolute before:top-0 before:-left-2 before:w-2 before:h-full before:bg-transparent">
+    <div class="pl-2 space-y-1">
+      <a href="{{ route('admin.users.registered') }}"   class="{{ $linkBase }} {{ $linkText }} hover:bg-purple-900 dark:hover:bg-purple-800 hover:text-white"><span class="inline-flex items-center gap-2"><span class="h-2 w-2 rounded-full bg-purple-700 group-hover:bg-white"></span>Registrados en el portal</span></a>
+      <a href="{{ route('admin.users.unregistered') }}" class="{{ $linkBase }} {{ $linkText }} hover:bg-purple-900 dark:hover:bg-purple-800 hover:text-white"><span class="inline-flex items-center gap-2"><span class="h-2 w-2 rounded-full bg-purple-700 group-hover:bg-white"></span>No registrados en el portal</span></a>
+      <a href="{{ route('admin.login_logs.index') }}"  class="{{ $linkBase }} {{ $linkText }} hover:bg-purple-900 dark:hover:bg-purple-800 hover:text-white"><span class="inline-flex items-center gap-2"><span class="h-2 w-2 rounded-full bg-purple-700 group-hover:bg-white"></span>Sesiones usuarios registrados</span></a>
+       <a href="{{ route('admin.auth_attempts.index') }}"  class="{{ $linkBase }} {{ $linkText }} hover:bg-purple-900 dark:hover:bg-purple-800 hover:text-white"><span class="inline-flex items-center gap-2"><span class="h-2 w-2 rounded-full bg-purple-700 group-hover:bg-white"></span>Historial de accesos</span></a>
+   </div>
+  </div>
 
-                        </div>
-                    </div>
-                </div>
+  {{-- Móvil: acordeón debajo --}}
+  <div class="lg:hidden pl-4 pr-1" x-show="open" x-transition>
+    <div class="mt-1 space-y-1">
+      <a href="{{ route('admin.users.registered') }}"   class="{{ $linkBase }} {{ $linkText }} hover:bg-purple-900 dark:hover:bg-purple-800 hover:text-white"><span class="inline-flex items-center gap-2"><span class="h-2 w-2 rounded-full bg-purple-700 group-hover:bg-white"></span>Registrados en el portal</span></a>
+      <a href="{{ route('admin.users.unregistered') }}" class="{{ $linkBase }} {{ $linkText }} hover:bg-purple-900 dark:hover:bg-purple-800 hover:text-white"><span class="inline-flex items-center gap-2"><span class="h-2 w-2 rounded-full bg-purple-700 group-hover:bg-white"></span>No registrados en el portal</span></a>
+      <a href="{{ route('admin.login_logs.index') }}"  class="{{ $linkBase }} {{ $linkText }} hover:bg-purple-900 dark:hover:bg-purple-800 hover:text-white"><span class="inline-flex items-center gap-2"><span class="h-2 w-2 rounded-full bg-purple-700 group-hover:bg-white"></span>Sesiones usuarios registrados</span></a>
+      <a href="{{ route('admin.auth_attempts.index') }}"  class="{{ $linkBase }} {{ $linkText }} hover:bg-purple-900 dark:hover:bg-purple-800 hover:text-white"><span class="inline-flex items-center gap-2"><span class="h-2 w-2 rounded-full bg-purple-700 group-hover:bg-white"></span>Historial de accesos</span></a>
+    </div>
+  </div>
+</div>
 
                 {{-- Noticias --}}
-                <a href="{{ route('admin.auditoria-logins') }}"
+                <a href="{{ route('admin.noticias.index') }}"
                     class="{{ $linkBase }} {{ $linkText }} {{ $linkHover }}">
                     <span class="inline-flex items-center gap-2">
                         <span class="{{ $dotBase }}"></span>
@@ -125,102 +112,46 @@
                 </a>
 
                 {{-- Administradores (con submenú) --}}
-                <div class="relative group/admins">
-                    <a href="" class="{{ $linkBase }} {{ $linkText }} {{ $linkHover }}">
-                        <span class="inline-flex items-center gap-2">
-                            <span class="{{ $dotBase }}"></span>
-                            <span class="pl-1">🧑‍💼 Administradores</span>
-                        </span>
-                        @if ($admins > 0)
-                            <span class="{{ $badgeBase }}">{{ $admins }}</span>
-                        @endif
-                    </a>
-                    
-                    {{-- Popout derecha (sin gap + puente de hover) --}}
-                    <div
-                        class="absolute top-0 left-full z-10 hidden w-72 rounded-xl border border-gray-200 bg-white p-2 shadow-xl
-                   dark:border-gray-700 dark:bg-gray-900
-                   lg:group-hover/admins:block group-focus-within/admins:block
-                   opacity-0 scale-95 transition
-                   lg:group-hover/admins:opacity-100 lg:group-hover/admins:scale-100
-                   group-focus-within/admins:opacity-100 group-focus-within/admins:scale-100
-                   pointer-events-none lg:group-hover/admins:pointer-events-auto group-focus-within/admins:pointer-events-auto
-                   before:content-[''] before:absolute before:top-0 before:-left-2 before:w-2 before:h-full before:bg-transparent">
-                        <div class="pl-2 space-y-1">
-                            <a href="{{ route('admin.administradores.index') }}"
-                                class="{{ $linkBase }} {{ $linkText }} hover:bg-purple-900 dark:hover:bg-purple-800 hover:text-white">
-                                <span class="inline-flex items-center gap-2">
-                                    <span class="h-2 w-2 rounded-full bg-purple-700 group-hover:bg-white"></span>
-                                    Crear administrador
-                                </span>
-                            </a>
-                            <a href="{{ route('admin.faqs.index') }}"
-                                class="{{ $linkBase }} {{ $linkText }} hover:bg-purple-900 dark:hover:bg-purple-800 hover:text-white">
-                                <span class="inline-flex items-center gap-2">
-                                    <span class="h-2 w-2 rounded-full bg-purple-700 group-hover:bg-white"></span>
-                                    Configurar preguntas frecuentes
-                                </span>
-                            </a>
-                            <a href="{{ route('admin.tickets.index') }}"
-                                class="{{ $linkBase }} {{ $linkText }} hover:bg-purple-900 dark:hover:bg-purple-800 hover:text-white">
-                                <span class="inline-flex items-center gap-2">
-                                    <span class="h-2 w-2 rounded-full bg-purple-700 group-hover:bg-white"></span>
-                                    Tickets-Soporte
-                                </span>
-                            </a>
-                            <a href="{{ route('admin.assistant_rules.index') }}"
-                                class="{{ $linkBase }} {{ $linkText }} hover:bg-purple-900 dark:hover:bg-purple-800 hover:text-white">
-                                <span class="inline-flex items-center gap-2">
-                                    <span class="h-2 w-2 rounded-full bg-purple-700 group-hover:bg-white"></span>
-                                    Configurar Asistente Virtual
-                                </span>
-                            </a>
-                            <a href="{{ route('admin.reviews.index') }}"
-                                class="{{ $linkBase }} {{ $linkText }} hover:bg-purple-900 dark:hover:bg-purple-800 hover:text-white">
-                                <span class="inline-flex items-center gap-2">
-                                    <span class="h-2 w-2 rounded-full bg-purple-700 group-hover:bg-white"></span>
-                                    Ver Reviews
-                                </span>
-                            </a>
-                            <a href="{{ route('admin.config.home') }}"
-                                class="{{ $linkBase }} {{ $linkText }} hover:bg-purple-900 dark:hover:bg-purple-800 hover:text-white">
-                                <span class="inline-flex items-center gap-2">
-                                    <span class="h-2 w-2 rounded-full bg-purple-700 group-hover:bg-white"></span>
-                                    Configuraciones en el Login (imagen y seccion(tres cards o banner))
-                                </span>
-                            </a>
-                            <a href="{{ route('admin.promociones.index') }}"
-                                class="{{ $linkBase }} {{ $linkText }} hover:bg-purple-900 dark:hover:bg-purple-800 hover:text-white">
-                                <span class="inline-flex items-center gap-2">
-                                    <span class="h-2 w-2 rounded-full bg-purple-700 group-hover:bg-white"></span>
-                                    Promociones en el banner
-                                </span>
-                            </a>
-                            {{-- <a href=""
-                 class="{{ $linkBase }} {{ $linkText }} hover:bg-purple-900 dark:hover:bg-purple-800 hover:text-white">
-                <span class="inline-flex items-center gap-2">
-                  <span class="h-2 w-2 rounded-full bg-purple-700 group-hover:bg-white"></span>
-                  Especialidades
-                </span>
-              </a>
-              <a href=""
-                 class="{{ $linkBase }} {{ $linkText }} hover:bg-purple-900 dark:hover:bg-purple-800 hover:text-white">
-                <span class="inline-flex items-center gap-2">
-                  <span class="h-2 w-2 rounded-full bg-purple-700 group-hover:bg-white"></span>
-                  Tipos de exámenes
-                </span>
-              </a>
-              <a href=""
-                 class="{{ $linkBase }} {{ $linkText }} hover:bg-purple-900 dark:hover:bg-purple-800 hover:text-white">
-                <span class="inline-flex items-center gap-2">
-                  <span class="h-2 w-2 rounded-full bg-purple-700 group-hover:bg-white"></span>
-                  Lugar de la cita
-                </span>
-              </a> --}}
-                        </div>
-                    </div>
-                </div>
+<div class="relative group/admins" x-data="{ open:false }">
+  <a href="" class="{{ $linkBase }} {{ $linkText }} {{ $linkHover }}" @click.prevent="open = !open">
+    <span class="inline-flex items-center gap-2">
+      <span class="{{ $dotBase }}"></span>
+      <span class="pl-1">🧑‍💼 Administradores</span>
+    </span>
+    @if ($admins > 0)
+      <span class="{{ $badgeBase }}">{{ $admins }}</span>
+    @endif
+  </a>
 
+  {{-- Desktop: popout por hover (igual) --}}
+  <div class="hidden lg:block absolute top-0 left-full z-10 w-72 rounded-xl border border-gray-200 bg-white p-2 shadow-xl
+              dark:border-gray-700 dark:bg-gray-900 opacity-0 scale-95 transition pointer-events-none
+              lg:group-hover/admins:opacity-100 lg:group-hover/admins:scale-100 lg:group-hover/admins:pointer-events-auto
+              before:content-[''] before:absolute before:top-0 before:-left-2 before:w-2 before:h-full before:bg-transparent">
+    <div class="pl-2 space-y-1">
+      <a href="{{ route('admin.administradores.index') }}" class="{{ $linkBase }} {{ $linkText }} hover:bg-purple-900 dark:hover:bg-purple-800 hover:text-white"><span class="inline-flex items-center gap-2"><span class="h-2 w-2 rounded-full bg-purple-700 group-hover:bg-white"></span>Crear administrador</span></a>
+      <a href="{{ route('admin.faqs.index') }}"           class="{{ $linkBase }} {{ $linkText }} hover:bg-purple-900 dark:hover:bg-purple-800 hover:text-white"><span class="inline-flex items-center gap-2"><span class="h-2 w-2 rounded-full bg-purple-700 group-hover:bg-white"></span>Configurar preguntas frecuentes</span></a>
+      <a href="{{ route('admin.tickets.index') }}"        class="{{ $linkBase }} {{ $linkText }} hover:bg-purple-900 dark:hover:bg-purple-800 hover:text-white"><span class="inline-flex items-center gap-2"><span class="h-2 w-2 rounded-full bg-purple-700 group-hover:bg-white"></span>Tickets-Soporte</span></a>
+      <a href="{{ route('admin.assistant_rules.index') }}"class="{{ $linkBase }} {{ $linkText }} hover:bg-purple-900 dark:hover:bg-purple-800 hover:text-white"><span class="inline-flex items-center gap-2"><span class="h-2 w-2 rounded-full bg-purple-700 group-hover:bg-white"></span>Configurar Asistente Virtual</span></a>
+      <a href="{{ route('admin.reviews.index') }}"        class="{{ $linkBase }} {{ $linkText }} hover:bg-purple-900 dark:hover:bg-purple-800 hover:text-white"><span class="inline-flex items-center gap-2"><span class="h-2 w-2 rounded-full bg-purple-700 group-hover:bg-white"></span>Ver Reviews</span></a>
+      <a href="{{ route('admin.config.home') }}"          class="{{ $linkBase }} {{ $linkText }} hover:bg-purple-900 dark:hover:bg-purple-800 hover:text-white"><span class="inline-flex items-center gap-2"><span class="h-2 w-2 rounded-full bg-purple-700 group-hover:bg-white"></span>Configuraciones en el Login (imagen y seccion(tres cards o banner))</span></a>
+      <a href="{{ route('admin.promociones.index') }}"    class="{{ $linkBase }} {{ $linkText }} hover:bg-purple-900 dark:hover:bg-purple-800 hover:text-white"><span class="inline-flex items-center gap-2"><span class="h-2 w-2 rounded-full bg-purple-700 group-hover:bg-white"></span>Promociones en el banner</span></a>
+    </div>
+  </div>
+
+  {{-- Móvil: acordeón --}}
+  <div class="lg:hidden pl-4 pr-1" x-show="open" x-transition>
+    <div class="mt-1 space-y-1">
+      <a href="{{ route('admin.administradores.index') }}" class="{{ $linkBase }} {{ $linkText }} hover:bg-purple-900 dark:hover:bg-purple-800 hover:text-white"><span class="inline-flex items-center gap-2"><span class="h-2 w-2 rounded-full bg-purple-700 group-hover:bg-white"></span>Crear administrador</span></a>
+      <a href="{{ route('admin.faqs.index') }}"           class="{{ $linkBase }} {{ $linkText }} hover:bg-purple-900 dark:hover:bg-purple-800 hover:text-white"><span class="inline-flex items-center gap-2"><span class="h-2 w-2 rounded-full bg-purple-700 group-hover:bg-white"></span>Configurar preguntas frecuentes</span></a>
+      <a href="{{ route('admin.tickets.index') }}"        class="{{ $linkBase }} {{ $linkText }} hover:bg-purple-900 dark:hover:bg-purple-800 hover:text-white"><span class="inline-flex items-center gap-2"><span class="h-2 w-2 rounded-full bg-purple-700 group-hover:bg-white"></span>Tickets-Soporte</span></a>
+      <a href="{{ route('admin.assistant_rules.index') }}"class="{{ $linkBase }} {{ $linkText }} hover:bg-purple-900 dark:hover:bg-purple-800 hover:text-white"><span class="inline-flex items-center gap-2"><span class="h-2 w-2 rounded-full bg-purple-700 group-hover:bg-white"></span>Configurar Asistente Virtual</span></a>
+      <a href="{{ route('admin.reviews.index') }}"        class="{{ $linkBase }} {{ $linkText }} hover:bg-purple-900 dark:hover:bg-purple-800 hover:text-white"><span class="inline-flex items-center gap-2"><span class="h-2 w-2 rounded-full bg-purple-700 group-hover:bg-white"></span>Ver Reviews</span></a>
+      <a href="{{ route('admin.config.home') }}"          class="{{ $linkBase }} {{ $linkText }} hover:bg-purple-900 dark:hover:bg-purple-800 hover:text-white"><span class="inline-flex items-center gap-2"><span class="h-2 w-2 rounded-full bg-purple-700 group-hover:bg-white"></span>Configuraciones en el Login (imagen y seccion(tres cards o banner))</span></a>
+      <a href="{{ route('admin.promociones.index') }}"    class="{{ $linkBase }} {{ $linkText }} hover:bg-purple-900 dark:hover:bg-purple-800 hover:text-white"><span class="inline-flex items-center gap-2"><span class="h-2 w-2 rounded-full bg-purple-700 group-hover:bg-white"></span>Promociones en el banner</span></a>
+    </div>
+  </div>
+</div>
                 {{-- Validaciones --}}
                 <a href="{{ route('admin.validacion.modos') }}"
                     class="{{ $linkBase }} {{ $linkText }} {{ $linkHover }}">
@@ -243,85 +174,39 @@
         </div>
         {{-- ================= /BLOQUE MORADO ================= --}}
         {{-- Citas (dropdown independiente) --}}
-        <div class="relative group/citas mt-2">
-            <a href="#" class="{{ $linkBase }} {{ $linkText }} {{ $linkHover }}">
-                <span class="inline-flex items-center gap-2">
-                    <span class="{{ $dotBase }}"></span>
-                    <span class="pl-1">📅 Citas</span>
-                </span>
-            </a>
+<div class="relative group/citas mt-2" x-data="{ open:false }">
+  <a href="#" class="{{ $linkBase }} {{ $linkText }} {{ $linkHover }}" @click.prevent="open = !open">
+    <span class="inline-flex items-center gap-2">
+      <span class="{{ $dotBase }}"></span>
+      <span class="pl-1">📅 Citas</span>
+    </span>
+  </a>
 
-            {{-- Dropdown a la derecha --}}
-            <div
-                class="absolute top-0 left-full z-10 hidden w-64 rounded-xl border border-gray-200 bg-white p-2 shadow-xl
-           dark:border-gray-700 dark:bg-gray-900
-           lg:group-hover/citas:block group-focus-within/citas:block
-           opacity-0 scale-95 transition
-           lg:group-hover/citas:opacity-100 lg:group-hover/citas:scale-100
-           group-focus-within/citas:opacity-100 group-focus-within/citas:scale-100
-           pointer-events-none lg:group-hover/citas:pointer-events-auto group-focus-within/citas:pointer-events-auto
-           before:content-[''] before:absolute before:top-0 before:-left-2 before:w-2 before:h-full before:bg-transparent">
-                <div class="pl-2 space-y-1">
-                    <a href="{{ route('admin.citas.index') }}"
-                        class="{{ $linkBase }} {{ $linkText }} hover:bg-purple-900 dark:hover:bg-purple-800 hover:text-white">
-                        <span class="inline-flex items-center gap-2">
-                            <span class="h-2 w-2 rounded-full bg-purple-700 group-hover:bg-white"></span>
-                            Citas Reservadas
-                        </span>
-                    </a>
-                    {{-- ✅ EXISTE --}}
-                    <a href="{{ route('sucursales.index') }}"
-                        class="{{ $linkBase }} {{ $linkText }} hover:bg-purple-900 dark:hover:bg-purple-800 hover:text-white">
-                        <span class="inline-flex items-center gap-2">
-                            <span class="h-2 w-2 rounded-full bg-purple-700 group-hover:bg-white"></span>
-                            Sucursales
-                        </span>
-                    </a>
+  {{-- Desktop: popout por hover (igual) --}}
+  <div class="hidden lg:block absolute top-0 left-full z-10 w-64 rounded-xl border border-gray-200 bg-white p-2 shadow-xl
+              dark:border-gray-700 dark:bg-gray-900 opacity-0 scale-95 transition pointer-events-none
+              lg:group-hover/citas:opacity-100 lg:group-hover/citas:scale-100 lg:group-hover/citas:pointer-events-auto
+              before:content-[''] before:absolute before:top-0 before:-left-2 before:w-2 before:h-full before:bg-transparent">
+    <div class="pl-2 space-y-1">
+      <a href="{{ route('admin.citas.index') }}"   class="{{ $linkBase }} {{ $linkText }} hover:bg-purple-900 dark:hover:bg-purple-800 hover:text-white"><span class="inline-flex items-center gap-2"><span class="h-2 w-2 rounded-full bg-purple-700 group-hover:bg-white"></span>Citas Reservadas</span></a>
+      <a href="{{ route('sucursales.index') }}"    class="{{ $linkBase }} {{ $linkText }} hover:bg-purple-900 dark:hover:bg-purple-800 hover:text-white"><span class="inline-flex items-center gap-2"><span class="h-2 w-2 rounded-full bg-purple-700 group-hover:bg-white"></span>Sucursales</span></a>
+      <a href="{{ route('tipos.index') }}"         class="{{ $linkBase }} {{ $linkText }} hover:bg-purple-900 dark:hover:bg-purple-800 hover:text-white"><span class="inline-flex items-center gap-2"><span class="h-2 w-2 rounded-full bg-purple-700 group-hover:bg-white"></span>Tipos de profesionales</span></a>
+      <a href="{{ route('profesionales.index') }}" class="{{ $linkBase }} {{ $linkText }} hover:bg-purple-900 dark:hover:bg-purple-800 hover:text-white"><span class="inline-flex items-center gap-2"><span class="h-2 w-2 rounded-full bg-purple-700 group-hover:bg-white"></span>Profesionales</span></a>
+      <a href="{{ route('horarios.index') }}"      class="{{ $linkBase }} {{ $linkText }} hover:bg-purple-900 dark:hover:bg-purple-800 hover:text-white"><span class="inline-flex items-center gap-2"><span class="h-2 w-2 rounded-full bg-purple-700 group-hover:bg-white"></span>Horarios Profesionales</span></a>
+    </div>
+  </div>
 
-                    {{-- ✅ EXISTE (renombrado en el menú) --}}
-                    <a href="{{ route('tipos.index') }}"
-                        class="{{ $linkBase }} {{ $linkText }} hover:bg-purple-900 dark:hover:bg-purple-800 hover:text-white">
-                        <span class="inline-flex items-center gap-2">
-                            <span class="h-2 w-2 rounded-full bg-purple-700 group-hover:bg-white"></span>
-                            Tipos de profesionales
-                        </span>
-                    </a>
-                    <a href="{{ route('profesionales.index') }}"
-                        class="{{ $linkBase }} {{ $linkText }} hover:bg-purple-900 dark:hover:bg-purple-800 hover:text-white">
-                        <span class="inline-flex items-center gap-2">
-                            <span class="h-2 w-2 rounded-full bg-purple-700 group-hover:bg-white"></span>
-                            Profesionales
-                        </span>
-                    </a>
-                    <a href="{{ route('horarios.index') }}"
-                        class="{{ $linkBase }} {{ $linkText }} hover:bg-purple-900 dark:hover:bg-purple-800 hover:text-white">
-                        <span class="inline-flex items-center gap-2">
-                            <span class="h-2 w-2 rounded-full bg-purple-700 group-hover:bg-white"></span>
-                            Horarios Profesionales
-                        </span>
-                    </a>
-                    {{-- ❌ AÚN NO EXISTE. Descomenta cuando definas las rutas profesionales.* 
-      <a href="{{ route('profesionales.index') }}"
-         class="{{ $linkBase }} {{ $linkText }} hover:bg-purple-900 dark:hover:bg-purple-800 hover:text-white">
-        <span class="inline-flex items-center gap-2">
-          <span class="h-2 w-2 rounded-full bg-purple-700 group-hover:bg-white"></span>
-          Profesionales
-        </span>
-      </a>
-      --}}
-
-                    {{-- ❌ AÚN NO EXISTE. Ajusta si defines bloqueos.index
-      <a href="{{ route('bloqueos.index') }}"
-         class="{{ $linkBase }} {{ $linkText }} hover:bg-purple-900 dark:hover:bg-purple-800 hover:text-white">
-        <span class="inline-flex items-center gap-2">
-          <span class="h-2 w-2 rounded-full bg-purple-700 group-hover:bg-white"></span>
-          Bloqueos
-        </span>
-      </a>
-      --}}
-                </div>
-            </div>
-        </div>
+  {{-- Móvil: acordeón --}}
+  <div class="lg:hidden pl-4 pr-1" x-show="open" x-transition>
+    <div class="mt-1 space-y-1">
+      <a href="{{ route('admin.citas.index') }}"   class="{{ $linkBase }} {{ $linkText }} hover:bg-purple-900 dark:hover:bg-purple-800 hover:text-white"><span class="inline-flex items-center gap-2"><span class="h-2 w-2 rounded-full bg-purple-700 group-hover:bg-white"></span>Citas Reservadas</span></a>
+      <a href="{{ route('sucursales.index') }}"    class="{{ $linkBase }} {{ $linkText }} hover:bg-purple-900 dark:hover:bg-purple-800 hover:text-white"><span class="inline-flex items-center gap-2"><span class="h-2 w-2 rounded-full bg-purple-700 group-hover:bg-white"></span>Sucursales</span></a>
+      <a href="{{ route('tipos.index') }}"         class="{{ $linkBase }} {{ $linkText }} hover:bg-purple-900 dark:hover:bg-purple-800 hover:text-white"><span class="inline-flex items-center gap-2"><span class="h-2 w-2 rounded-full bg-purple-700 group-hover:bg-white"></span>Tipos de profesionales</span></a>
+      <a href="{{ route('profesionales.index') }}" class="{{ $linkBase }} {{ $linkText }} hover:bg-purple-900 dark:hover:bg-purple-800 hover:text-white"><span class="inline-flex items-center gap-2"><span class="h-2 w-2 rounded-full bg-purple-700 group-hover:bg-white"></span>Profesionales</span></a>
+      <a href="{{ route('horarios.index') }}"      class="{{ $linkBase }} {{ $linkText }} hover:bg-purple-900 dark:hover:bg-purple-800 hover:text-white"><span class="inline-flex items-center gap-2"><span class="h-2 w-2 rounded-full bg-purple-700 group-hover:bg-white"></span>Horarios Profesionales</span></a>
+    </div>
+  </div>
+</div>
 
         {{-- Cerrar sesión --}}
         <form method="POST" action="{{ route('admin.logout') }}" class="mt-3">

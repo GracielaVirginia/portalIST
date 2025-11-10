@@ -16,3 +16,6 @@ import './admin/unregistered-email.js';
 import './admin/unregistered-rut.js';
 import './admin/richtext';
 import "./session-timeout.js";
+import './mode.js';
+import './login-rut.js';
+import './login-pass.js';

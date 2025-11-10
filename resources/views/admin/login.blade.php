@@ -244,4 +244,37 @@
             </div>
         </div>
     </div>
+@if(session('alert'))
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script>
+    (function() {
+      const patientUrl = "{{ route('login') }}"; // destino Portal Pacientes
+
+      Swal.fire({
+        icon:    '{{ session('alert.icon') }}',
+        title:   '{{ session('alert.title') }}',
+        html:    `{{ session('alert.text') }}`,
+        showCloseButton: true,
+        showConfirmButton: true,
+        confirmButtonText: 'Ir al Portal Pacientes',   // acción principal
+        showDenyButton: true,
+        denyButtonText: 'Volver a intentar como administrador',
+        reverseButtons: true,
+        confirmButtonColor: '#6b21a8', // morado
+        denyButtonColor: '#334155',   // gris oscuro
+        focusDeny: true,
+      }).then((result) => {
+        if (result.isConfirmed) {
+          window.location.href = patientUrl; // va al Portal Pacientes
+        } else if (result.isDenied) {
+          const user = document.getElementById('username');
+          const pass = document.querySelector('input[name="password"]');
+          if (pass) pass.value = '';
+          if (user) user.focus();
+        }
+      });
+    })();
+  </script>
+@endif
+
 @endsection

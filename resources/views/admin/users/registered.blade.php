@@ -9,7 +9,21 @@
     logoutRoute="admin.logout"
     variant="inline"
   />
+  @if(session('ok'))
+    <div class="mb-4 rounded-lg bg-green-100 text-green-900 px-4 py-2 font-semibold">
+      {{ session('ok') }}
+    </div>
+  @endif
 
+  @if($errors->any())
+    <div class="mb-4 rounded-lg bg-red-100 text-red-900 px-4 py-2">
+      <ul class="list-disc ms-5">
+        @foreach($errors->all() as $e)
+          <li>{{ $e }}</li>
+        @endforeach
+      </ul>
+    </div>
+  @endif
   <h1 class="text-2xl font-bold text-purple-700 dark:text-purple-200 mb-4">👤 Usuarios registrados</h1>
 
   <div class="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-4 shadow-sm">

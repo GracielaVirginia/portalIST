@@ -40,18 +40,26 @@ public function loginAttemp(Request $request)
         ->orWhere('rut', $rutPosible)
         ->first();
 
-    // ❌ No existe en la tabla admin_usuarios
-    if (!$admin) {
-        \Log::warning('Intento de acceso no autorizado: usuario no existe en admin_usuarios', [
-            'input' => $input,
-            'ip' => $request->ip(),
-            'time' => now()->toDateTimeString(),
-        ]);
+// ❌ No existe en la tabla admin_usuarios
+if (!$admin) {
+    \Log::warning('Intento de acceso no autorizado: usuario no existe en admin_usuarios', [
+        'input' => $input,
+        'ip' => $request->ip(),
+        'time' => now()->toDateTimeString(),
+    ]);
 
-        return back()->withErrors([
-            'username' => 'Usted no es administrador o no tiene acceso al panel administrativo.',
-        ])->onlyInput('username');
-    }
+    // Devuelve vista con alerta SweetAlert amigable
+    return back()
+        ->with('alert', [
+            'icon' => 'info',
+            'title' => 'Acceso restringido',
+            'text'  => 'Este acceso es solo para administradores. 
+                        Si eres paciente, por favor inicia sesión en el Portal Pacientes.',
+            'footer'=> '<a href="'.route('login').'">Ir al Portal Pacientes</a>'
+        ])
+        ->onlyInput('username');
+}
+
 
     // ❌ Usuario inactivo
     if (!$admin->activo) {

@@ -13,7 +13,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use App\Models\GestionSaludCompleta;
 use Illuminate\Support\Facades\App;   
-
+use App\Models\Alerta;
+use Illuminate\Support\Facades\Auth;
 class AdminDashboardController extends Controller
 {
     public function index()
@@ -76,7 +77,28 @@ class AdminDashboardController extends Controller
             ->whereBetween('logged_in_at', [$hoy, $mañana])
             ->latest('logged_in_at')
             ->get();
+// Admin autenticado (ajusta el guard si usas otro)
+$admin = Auth::guard('admin')->user() ?? AdminUsuario::first();
+$adminName = $admin?->nombre_completo;
+if (blank($adminName)) { // cubre null, "", "   "
+    $adminName = 'Administrador';
+}
+$alertStats = [
+    // usuarios únicos que fallaron login (según tabla alertas)
+    'login'      => Alerta::where('tipo', 'login_fallido')
+                        ->whereNotNull('user_id')
+                        ->distinct('user_id')
+                        ->count('user_id'),
 
+    // usuarios únicos que fallaron validación (según tabla alertas)
+    'validacion' => Alerta::where('tipo', 'validacion_fallida')
+                        ->whereNotNull('user_id')
+                        ->distinct('user_id')
+                        ->count('user_id'),
+
+    // bloqueados VIGENTES (estado real hoy)
+    'bloqueados' => User::where('is_blocked', 1)->count(),
+];
         return view('admin.dashboard', [
             // Sidebar
             'sidebarStats'       => [
@@ -94,6 +116,10 @@ class AdminDashboardController extends Controller
             'loginLogs'          => $loginLogs,
             'usersCount'         => $usersCount,
             'activeUsersCount'   => $activeUsersCount,
+
+            'admin'      => $admin,
+'alertStats' => $alertStats,
+ 'adminName'  => $adminName, 
         ]);
     }
 

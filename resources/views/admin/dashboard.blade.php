@@ -5,10 +5,15 @@
 @section('admin')
     <x-admin.layout title="Dashboard">
         {{-- 🟣 Topbar --}}
-        <x-slot:topbar>
-            <x-admin.topbar :user-name="$admin->nombre_completo ?? 'Administrador'" search-url="{{ route('admin.users.search') }}"
-                placeholder="Buscar paciente por RUT o nombre…" />
-        </x-slot:topbar>
+<x-slot:topbar>
+  <x-admin.topbar
+      :user-name="$adminName"
+      :alert-stats="$alertStats"
+      audit-url="{{ route('admin.auth_attempts.index') }}"
+      search-url="{{ route('admin.users.search') }}"
+      placeholder="Buscar paciente por RUT o nombre…"
+  />
+</x-slot:topbar>
 
         {{-- 🟣 Sidebar --}}
         <x-slot:sidebar>

@@ -104,19 +104,22 @@
             </button>
 
             {{-- Descargar --}}
-            <a href="{{ route('documents.download', $doc) }}"
-               class="rounded-md border px-2.5 py-1.5 text-sm hover:bg-gray-50">
-              Descargar
-            </a>
+<a href="{{ route('documents.download', $doc) }}"
+   target="_blank" rel="noopener"
+   onclick="setTimeout(()=>{ window.location.href='{{ route('portal.home') }}' }, 1800)"
+   class="rounded-md border px-2.5 py-1.5 text-sm hover:bg-gray-50">
+  Descargar
+</a>
 
             {{-- Eliminar --}}
-            <form action="{{ route('documents.destroy', $doc) }}" method="POST"
-                  onsubmit="return confirm('¿Eliminar este documento?')">
-              @csrf @method('DELETE')
-              <button class="rounded-md border px-2.5 py-1.5 text-sm text-red-600 hover:bg-red-50">
-                Eliminar
-              </button>
-            </form>
+<form action="{{ route('documents.destroy', $doc) }}" method="POST" class="delete-doc-form inline">
+  @csrf
+  @method('DELETE')
+  <button type="submit"
+          class="rounded-md border px-2.5 py-1.5 text-sm text-red-600 hover:bg-red-50">
+    Eliminar
+  </button>
+</form>
           </div>
         </div>
       @empty
@@ -156,14 +159,42 @@
       </div>
     </div>
     <div class="flex items-center justify-end gap-2 px-5 pb-4">
-      <a id="doc-download" href="#" class="rounded-md border px-3 py-1.5 text-sm hover:bg-gray-50">Descargar</a>
-      <button class="rounded-md border px-3 py-1.5 text-sm" onclick="closeDocModal()">Cerrar</button>
+<a id="doc-download"
+   href="#"
+   data-url="{{ route('documents.download', $doc) }}"
+   class="rounded-md border px-3 py-1.5 text-sm hover:bg-gray-50">
+  Descargar
+</a>
+<button class="rounded-md border px-3 py-1.5 text-sm" onclick="closeDocModal()">Cerrar</button>
+
     </div>
   </div>
 
 </div>
 
 @push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const btn = document.getElementById('doc-download');
+  let redirectTimer = null;
+
+  btn.addEventListener('click', (e) => {
+    e.preventDefault();
+    const url = btn.dataset.url;
+    if (!url) return;
+
+    // 1) dispara la descarga en nueva pestaña (más compatible)
+    window.open(url, '_blank', 'noopener');
+
+    // 2) redirige esta pestaña
+    clearTimeout(redirectTimer);
+    redirectTimer = setTimeout(() => {
+      window.location.href = "{{ route('portal.home') }}";
+    }, 2000);
+  });
+});
+</script>
+
 <script>
   // Copiar link de compartir (usa la ruta de descarga)
   function copyShareLink(btn){
@@ -204,6 +235,31 @@
     while(bytes >= 1024 && i < u.length - 1){ bytes /= 1024; i++; }
     return (Math.round(bytes * 10) / 10) + ' ' + u[i];
   }
+</script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('.delete-doc-form').forEach(form => {
+    form.addEventListener('submit', function (e) {
+      e.preventDefault(); // evita el envío inmediato
+
+      Swal.fire({
+        title: '¿Eliminar este documento?',
+        text: "Esta acción no se puede deshacer.",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Sí, eliminar',
+        cancelButtonText: 'Cancelar'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          form.submit(); // envía el formulario si confirman
+        }
+      });
+    });
+  });
+});
 </script>
 @endpush
 @endsection

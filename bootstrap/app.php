@@ -18,6 +18,7 @@ $middleware->alias([
     'admin.auth' => \App\Http\Middleware\EnsureAdminAuthenticated::class,
      'update.activity' => \App\Http\Middleware\UpdateLoginActivity::class,
        'must.be.validated' => \App\Http\Middleware\EnsureUserIsValidated::class,
+       'log.auth.attempt' => \App\Http\Middleware\LogAuthAttempt::class,
 ]);
 
     })

@@ -4,12 +4,11 @@
 
 @section('admin')
   <div class="px-6 py-6">
-<div class="px-6 py-6">
-  <x-admin.nav-actions
-    backHref="{{ route('admin.dashboard') }}"
-    logoutRoute="admin.logout"
-    variant="inline"   {{-- o "sticky" si la tabla es larga --}}
-  />
+    <x-admin.nav-actions
+      backHref="{{ route('admin.dashboard') }}"
+      logoutRoute="admin.logout"
+      variant="inline"
+    />
     <h1 class="text-2xl font-bold text-purple-700 dark:text-purple-200">👤 Usuarios no registrados</h1>
   </div>
 
@@ -24,13 +23,12 @@
     </a>
   </div>
 
-  {{-- ⚙️ Config para inline-edit (patrones de URL usados por los JS) --}}
+  {{-- ⚙️ Config para inline-edit --}}
   <div id="dtConfig"
        data-email-update-pattern="{{ route('admin.users.unregistered.email', '__RUT__') }}"
        data-rut-update-pattern="{{ route('admin.users.unregistered.rut', '__RUT__') }}">
   </div>
 
-  {{-- Fallbacks por si el JS carga antes del div --}}
   <script>
     document.body.dataset.emailUpdatePattern = "{{ route('admin.users.unregistered.email', '__RUT__') }}";
     document.body.dataset.rutUpdatePattern   = "{{ route('admin.users.unregistered.rut', '__RUT__') }}";
@@ -53,6 +51,9 @@
       <tbody class="text-sm"></tbody>
     </table>
   </div>
+
+  {{-- Contenedor para mensajes flash --}}
+  <div id="flash-container" class="fixed top-4 right-4 z-50 space-y-2"></div>
 @endsection
 
 @push('styles')
@@ -64,6 +65,28 @@
   <script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
 
   <script>
+    // ✅ Función para mostrar mensaje tipo "flash session"
+    function showFlashMessage(message, type = 'success') {
+      const container = document.getElementById('flash-container');
+      const id = 'flash-' + Date.now();
+      const color = type === 'error'
+        ? 'bg-red-100 border-red-400 text-red-700 dark:bg-red-900/30 dark:text-red-300'
+        : 'bg-purple-100 border-purple-400 text-purple-700 dark:bg-purple-900/30 dark:text-purple-200';
+
+      const div = document.createElement('div');
+      div.id = id;
+      div.className = `px-4 py-2 rounded-lg border shadow-lg text-sm font-medium max-w-xs ${color}`;
+      div.textContent = message;
+      container.appendChild(div);
+
+      // Auto-ocultar después de 3.5 segundos
+      setTimeout(() => {
+        div.style.opacity = '0';
+        div.style.transition = 'opacity 0.3s';
+        setTimeout(() => div.remove(), 300);
+      }, 3500);
+    }
+
     document.addEventListener('DOMContentLoaded', function () {
       const table = $('#tablaNoRegistrados').DataTable({
         processing: true,
@@ -71,9 +94,8 @@
         ajax: '{{ route('admin.users.unregistered.data') }}',
         pageLength: 10,
         lengthMenu: [10, 25, 50, 100],
-        order: [[4, 'desc'], [0, 'asc']], // Día desc, luego Documento
+        order: [[4, 'desc'], [0, 'asc']],
         columns: [
-          // 👇 Documento (RUT) editable inline
           {
             data: 'numero_documento',
             name: 'numero_documento',
@@ -92,10 +114,7 @@
               `;
             }
           },
-
           { data: 'nombre_paciente',  name: 'nombre_paciente' },
-
-          // 👇 Email editable inline
           {
             data: 'email',
             name: 'email',
@@ -116,7 +135,6 @@
               `;
             }
           },
-
           { data: 'telefono', name: 'telefono' },
           { data: 'dia',      name: 'dia' },
           { data: 'gestiones',name: 'gestiones' },
@@ -137,7 +155,6 @@
             render: function(row) {
               const editUrl = '{{ route('admin.users.unregistered.edit', '__RUT__') }}'
                 .replace('__RUT__', encodeURIComponent(row.numero_documento));
-
               return `
                 <div class="flex items-center gap-2">
                   <a href="${editUrl}" class="btn-action btn-action--edit" title="Editar usuario">
@@ -154,15 +171,67 @@
           row.classList.add('border-b', 'border-gray-100', 'dark:border-gray-800');
         },
         initComplete: function() {
-          const $filter = $('#tablaNoRegistrados_filter');
-          const $input = $filter.find('input');
-          $input.attr('placeholder', 'Buscar…');
-          $input.on('keypress', function(e) {
-            if (e.which === 13) {
-              table.search($input.val()).draw();
-            }
-          });
+          $('#tablaNoRegistrados_filter input').attr('placeholder', 'Buscar…');
         }
+      });
+
+      // === Comportamiento RUT ===
+      $(document).on('click', '.js-rut-edit', function () {
+        const $btn = $(this);
+        const $container = $btn.closest('.flex');
+        const current = $container.find('.rut-text').text();
+        $container.find('.rut-text').replaceWith(
+          `<input type="text" class="js-rut-input border rounded px-2 py-1 text-xs w-28" value="${current}">`
+        );
+        $btn.removeClass('js-rut-edit').addClass('js-rut-save').html('OK');
+      });
+
+      $(document).on('click', '.js-rut-save', function () {
+        const $btn = $(this);
+        const $container = $btn.closest('.flex');
+        const $input = $container.find('.js-rut-input');
+        const newValue = $input.val().trim();
+        const oldRut = $btn.data('rut');
+
+        if (!newValue || newValue === oldRut) {
+          $input.replaceWith(`<span class="rut-text">${oldRut}</span>`);
+          $btn.removeClass('js-rut-save').addClass('js-rut-edit').html('✏️ <span class="hidden sm:inline">Editar</span>');
+          return;
+        }
+
+        // Simular éxito (reemplazar con fetch cuando lo tengas)
+        showFlashMessage('RUT actualizado correctamente.');
+        $input.replaceWith(`<span class="rut-text">${newValue}</span>`);
+        $btn.removeClass('js-rut-save').addClass('js-rut-edit').html('✏️ <span class="hidden sm:inline">Editar</span>').data('rut', newValue);
+      });
+
+      // === Comportamiento Email ===
+      $(document).on('click', '.js-email-edit', function () {
+        const $btn = $(this);
+        const $container = $btn.closest('.flex');
+        const current = $container.find('.email-text').text();
+        $container.find('.email-text').replaceWith(
+          `<input type="email" class="js-email-input border rounded px-2 py-1 text-xs w-36" value="${current}">`
+        );
+        $btn.removeClass('js-email-edit').addClass('js-email-save').html('OK');
+      });
+
+      $(document).on('click', '.js-email-save', function () {
+        const $btn = $(this);
+        const $container = $btn.closest('.flex');
+        const $input = $container.find('.js-email-input');
+        const newValue = $input.val().trim();
+        const oldEmail = $btn.data('email');
+
+        if (!newValue || newValue === oldEmail) {
+          $input.replaceWith(`<span class="email-text">${oldEmail}</span>`);
+          $btn.removeClass('js-email-save').addClass('js-email-edit').html('✏️ <span class="hidden sm:inline">Editar</span>');
+          return;
+        }
+
+        showFlashMessage('Email actualizado correctamente.');
+        $input.replaceWith(`<span class="email-text">${newValue}</span>`);
+        $btn.removeClass('js-email-save').addClass('js-email-edit').html('✏️ <span class="hidden sm:inline">Editar</span>').data('email', newValue);
       });
     });
   </script>

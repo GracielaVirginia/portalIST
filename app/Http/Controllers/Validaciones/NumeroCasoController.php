@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use App\Models\GestionSaludCompleta; // <-- usa tu modelo
+use App\Services\AlertaService;      // <-- agregado
 
 class NumeroCasoController extends Controller
 {
@@ -23,7 +24,7 @@ class NumeroCasoController extends Controller
         ]);
     }
 
-    public function procesar(Request $request)
+    public function procesar(Request $request, AlertaService $alertas) // <-- inyectado
     {
         $data = $request->validate([
             'numero_caso' => ['required', 'string', 'max:50'],
@@ -49,8 +50,35 @@ class NumeroCasoController extends Controller
             $intentos++;
             Cache::put($this->keyIntentos($user->id), $intentos, now()->addMinutes(self::BLOQUEO_MINUTOS));
 
+            // --- ALERTA al fallar por segunda vez o más
+            if ($intentos >= 2) {
+                $alertas->registrar('validacion_fallida', [
+                    'user_id'   => $user->id,
+                    'intentos'  => $intentos,
+                    'documento' => $user->rut ?? null,
+                    'extra'     => [
+                        'via'     => 'numero_caso',
+                        'mensaje' => 'Intentos de validación >= 2',
+                    ],
+                ]);
+            }
+
+            // --- BLOQUEO temporal y ALERTA
             if ($intentos >= self::MAX_INTENTOS) {
                 Cache::put($this->keyBloqueo($user->id), true, now()->addMinutes(self::BLOQUEO_MINUTOS));
+
+                $alertas->registrar('validacion_fallida', [
+                    'user_id'   => $user->id,
+                    'intentos'  => $intentos,
+                    'documento' => $user->rut ?? null,
+                    'extra'     => [
+                        'via'               => 'numero_caso',
+                        'bloqueo_temporal'  => true,
+                        'bloqueo_minutos'   => self::BLOQUEO_MINUTOS,
+                        'mensaje'           => 'Se alcanzó el límite de intentos de validación',
+                    ],
+                ]);
+
                 return back()->with(['error_message' => 'Se alcanzó el límite de intentos. Intenta de nuevo más tarde.']);
             }
 

@@ -56,60 +56,85 @@ use App\Http\Controllers\BloqueoController;
 use App\Http\Controllers\AgendaController;
 use App\Http\Controllers\Admin\CitaController;
 use App\Http\Controllers\Admin\LoginLogController;
-use App\Http\Controllers\Admin\AuditoriaLoginController;
 use App\Http\Controllers\SessionController;
 use App\Http\Controllers\Admin\OtherSettingController;
 use App\Http\Controllers\UserDocumentController;
-
-
-
+use App\Http\Controllers\AuthAttemptsReportController;
+use App\Http\Controllers\Admin\AuditoriaLoginController;
 
 /*
 |--------------------------------------------------------------------------
 | Rutas Públicas (visitantes y pacientes no autenticados)
 |--------------------------------------------------------------------------
 */
+Route::middleware('guest', 'log.auth.attempt')->group(function () {
+Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
+Route::post('/login', [AuthController::class, 'login'])->name('login.attempt');
+Route::post('/auth/verificar-rut', [PacienteController::class, 'verificarRut'])->name('verificar-rut');
+Route::post('/auth/verificar-pasaporte', [PacienteController::class, 'verificarPasaporte'])->name('verificar-pasaporte');
+Route::post('/auth/login-pasaporte', [AuthController::class, 'loginPasaporte'])->name('login.attempt.pasaporte');
+});
 
 Route::middleware('guest')->group(function () {
-    // Login
-    Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
-    Route::post('/login', [AuthController::class, 'login'])->name('login.attempt');
-    Route::post('/auth/verificar-rut', [PacienteController::class, 'verificarRut'])->name('verificar-rut');
-
 Route::get('/ayuda/enviar', [SoporteController::class, 'create'])->name('soporte.create');
 Route::post('/ayuda/enviar', [SoporteController::class, 'store'])->name('soporte.store');
-
 Route::post('/assistant/message', [\App\Http\Controllers\Assistant\ChatBotController::class, 'sendMessage'])->name('portal.assistant.message');
 Route::get('/conoce-mas', [PortalPageController::class, 'conoceMas'])->name('portal.conoce-mas');
 Route::get('/promociones', [PortalPromocionesController::class, 'index'])->name('portal.promociones');
 Route::get('/promociones/{promocion}', [PortalPromocionesController::class, 'show'])->name('portal.promociones.show');
-Route::post('/admin/support-tickets/galen', [AdminGalenSupportController::class, 'store'])
-    ->name('admin.support.galen.store');
+Route::post('/admin/support-tickets/galen', [AdminGalenSupportController::class, 'store'])->name('admin.support.galen.store');
 Route::get('/portal/faqs', [PortalFaqController::class,'list'])->name('portal.faqs.list');
-
-
 });
-
+Route::middleware('auth', 'must.be.validated', 'log.auth.attempt')->group(function () {
+Route::get('/portal', [HomeController::class, 'index'])->name('portal.home');
+});
 /*
 |--------------------------------------------------------------------------
-| Rutas Protegidas (pacientes autenticados)
+| Rutas Protegidas (pacientes autenticados) y (validados)
 |--------------------------------------------------------------------------
 */
-    Route::middleware('auth', 'must.be.validated')->group(function () {
-// Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+Route::middleware('auth', 'must.be.validated')->group(function () {
 Route::get('/logout/confirm', [LogoutConfirmController::class, 'show'])->name('logout.confirm');
 Route::post('/logout', [LogoutConfirmController::class, 'logout'])->name('logout'); // sobrescribe si hace falta
 Route::get('/clear-session', [ClearSessionController::class, 'clearSession'])->name('clear.session');
 Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
 Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
 Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+// Público JSON para el modal
+Route::get('/assistant/list', [\App\Http\Controllers\Portal\AssistantPublicController::class, 'list'])->name('portal.assistant.list');
+  Route::post('/controles/tension', [BloodPressureController::class, 'store'])->name('controles.tension.store');
+  Route::post('/controles/glucosa', [GlucoseReadingController::class, 'store'])->name('controles.glucosa.store');
+  Route::post('/controles/peso',    [WeightEntryController::class, 'store'])->name('controles.peso.store');
+  Route::get('/controles/series', [ControlesSeriesController::class, 'index'])->name('controles.series');
+  Route::post('/controles/pdf', [ControlesReportController::class, 'pdf'])->name('controles.pdf');
+
+    Route::get('/portal/citas',  [CitasController::class, 'index'])->name('portal.citas.index');
+    Route::post('/portal/citas', [CitasController::class, 'store'])->name('portal.citas.store');
+    Route::get ('/agenda',                      [AgendaPacienteController::class, 'index'])->name('agenda.index');
+    Route::get ('/agenda/medicos',              [AgendaPacienteController::class, 'apiMedicos'])->name('agenda.medicos');
+    Route::get ('/agenda/{id}/horarios',    [AgendaPacienteController::class, 'apiHorarios'])->name('agenda.horarios');
+    Route::get ('/agenda/{id}/eventos',     [AgendaPacienteController::class, 'apiEventos'])->name('agenda.eventos');
+    Route::post('/agenda/verificar',            [AgendaPacienteController::class, 'verificarDisponibilidad'])->name('agenda.verificar-disponibilidad');
+    Route::post('/agenda',                      [AgendaPacienteController::class, 'store'])->name('agenda.store');
+    Route::post('/agenda/{id}/bloquear',    [AgendaPacienteController::class, 'bloquearSlot'])->name('agenda.bloquear');
+    Route::post('/agenda/{id}/mover',           [AgendaPacienteController::class, 'mover'])->name('agenda.mover');
+    Route::post('/agenda/estado',               [AgendaPacienteController::class, 'cambiarEstado'])->name('agenda.cambiar-estado');
+
+Route::get('/agenda/{id}/eventos-visibles', [AgendaPacienteController::class, 'apiEventosVisibles'])->name('agenda.eventos-visibles');
+Route::post('/session/keepalive', [SessionController::class, 'keepAlive'])->name('session.keepalive');
+    Route::get('/documents', [UserDocumentController::class, 'index'])->name('documents.index');
+    Route::post('/documents', [UserDocumentController::class, 'store'])->name('documents.store');
+    Route::get('/documents/{document}/download', [UserDocumentController::class, 'download'])->name('documents.download');
+    Route::put('/documents/{document}', [UserDocumentController::class, 'update'])->name('documents.update');
+    Route::delete('/documents/{document}', [UserDocumentController::class, 'destroy'])->name('documents.destroy');
+Route::get('/portal/historial-medico', [UserDocumentController::class, 'indexPage'])->name('portal.historial.index');
+Route::get('/portal/historial-medico/agregar', [UserDocumentController::class, 'createPage'])->name('portal.historial.create');
 
 // ==============================
 // PÁGINAS DE RESULTADOS  (portal)
 // ==============================
 // 
 Route::get('/ver-resultados', [ResultadosController::class, 'index'])->name('ver-resultados');
-Route::get('/portal', [HomeController::class, 'index'])->name('portal.home');
 Route::get('/portal/resultados', [ResultadosController::class, 'index'])->name('portal.resultados.index');
 Route::get('/portal/resultados/especialidad/{esp}', [ResultadosController::class, 'porEspecialidad'])
         ->where('esp', '[A-Za-z]+')
@@ -134,9 +159,12 @@ Route::get('/portal/noticias', [PortalNoticiasController::class, 'index'])->name
 Route::get('/portal/noticias/{id}', [PortalNoticiasController::class, 'show'])->name('portal.noticias.show');
 Route::post('/reviews', [ReviewsController::class, 'store'])->name('reviews.store');
 Route::patch('/reviews/me', [ReviewsController::class, 'updateMine'])->name('reviews.update.mine');
+
+});
 // ==============================
 // PÁGINAS DE VALIDACIÓN (portal)
 // ==============================
+Route::middleware('auth', 'log.auth.attempt')->group(function () {
 Route::get('/validacion/sin-validacion', [SinValidacionController::class, 'index'])->name('validacion.sin');
 Route::get('/validacion/numero-caso', [NumeroCasoController::class, 'index'])->name('validacion.caso');
 Route::post('/validacion/procesar', [NumeroCasoController::class, 'procesar'])->name('validacion.procesar');
@@ -147,42 +175,9 @@ Route::post('/validacion/crear-cuenta', [CrearCuentaController::class, 'store'])
 Route::post('/validacion/cuenta/codigo', [CrearCuentaController::class, 'enviarCodigo'])->name('validacion.cuenta.codigo');
 Route::post('/validacion/cuenta', [CrearCuentaController::class, 'store'])->name('validacion.cuenta.store');
 
-
-
-// Público JSON para el modal
-Route::get('/assistant/list', [\App\Http\Controllers\Portal\AssistantPublicController::class, 'list'])->name('portal.assistant.list');
-  Route::post('/controles/tension', [BloodPressureController::class, 'store'])->name('controles.tension.store');
-  Route::post('/controles/glucosa', [GlucoseReadingController::class, 'store'])->name('controles.glucosa.store');
-  Route::post('/controles/peso',    [WeightEntryController::class, 'store'])->name('controles.peso.store');
-
-  Route::get('/controles/series', [ControlesSeriesController::class, 'index'])->name('controles.series');
-  Route::post('/controles/pdf', [ControlesReportController::class, 'pdf'])->name('controles.pdf');
-
-    Route::get('/portal/citas',  [CitasController::class, 'index'])->name('portal.citas.index');
-    Route::post('/portal/citas', [CitasController::class, 'store'])->name('portal.citas.store');
-    Route::get ('/agenda',                      [AgendaPacienteController::class, 'index'])->name('agenda.index');
-    Route::get ('/agenda/medicos',              [AgendaPacienteController::class, 'apiMedicos'])->name('agenda.medicos');
-    Route::get ('/agenda/{id}/horarios',    [AgendaPacienteController::class, 'apiHorarios'])->name('agenda.horarios');
-    Route::get ('/agenda/{id}/eventos',     [AgendaPacienteController::class, 'apiEventos'])->name('agenda.eventos');
-    Route::post('/agenda/verificar',            [AgendaPacienteController::class, 'verificarDisponibilidad'])->name('agenda.verificar-disponibilidad');
-    Route::post('/agenda',                      [AgendaPacienteController::class, 'store'])->name('agenda.store');
-    Route::post('/agenda/{id}/bloquear',    [AgendaPacienteController::class, 'bloquearSlot'])->name('agenda.bloquear');
-    Route::post('/agenda/{id}/mover',           [AgendaPacienteController::class, 'mover'])->name('agenda.mover');
-    Route::post('/agenda/estado',               [AgendaPacienteController::class, 'cambiarEstado'])->name('agenda.cambiar-estado');
-
-Route::get('/agenda/{id}/eventos-visibles', [AgendaPacienteController::class, 'apiEventosVisibles'])
-    ->name('agenda.eventos-visibles');
-Route::get('/admin/auditoria/login-intentos', [\App\Http\Controllers\Admin\LoginAuditController::class,'index'])
-  ->name('admin.login.audit');
-Route::post('/session/keepalive', [SessionController::class, 'keepAlive'])->name('session.keepalive');
-    Route::get('/documents', [UserDocumentController::class, 'index'])->name('documents.index');
-    Route::post('/documents', [UserDocumentController::class, 'store'])->name('documents.store');
-    Route::get('/documents/{document}/download', [UserDocumentController::class, 'download'])->name('documents.download');
-    Route::put('/documents/{document}', [UserDocumentController::class, 'update'])->name('documents.update');
-    Route::delete('/documents/{document}', [UserDocumentController::class, 'destroy'])->name('documents.destroy');
-Route::get('/portal/historial-medico', [UserDocumentController::class, 'indexPage'])->name('portal.historial.index');
-Route::get('/portal/historial-medico/agregar', [UserDocumentController::class, 'createPage'])->name('portal.historial.create');
 });
+
+
 /*
 |--------------------------------------------------------------------------
 | Página principal pública
@@ -225,7 +220,7 @@ Route::patch('/users/{id}/toggle-block', [UserController::class, 'toggleBlock'])
 Route::delete('/users/{id}', [UserController::class, 'destroy'])
     ->name('admin.users.delete');
 Route::get('/admins', [AdminController::class, 'index'])->name('admin.admins.index');
-Route::get('/validations', [ValidationController::class, 'index'])->name('admin.validations.index');
+// Route::get('/validations', [ValidationController::class, 'index'])->name('admin.validations.index');
 //no registrados
 Route::get('/users/unregistered', [UserController::class, 'unregistered'])->name('admin.users.unregistered');
 Route::get('/users/unregistered/{rut}/edit', [UserController::class, 'editUnregistered'])->name('admin.users.unregistered.edit');
@@ -391,10 +386,13 @@ Route::patch ('/admin/citas/{cita}/reservada', [CitaController::class, 'reservad
 Route::get('/admin/login-logs', [LoginLogController::class, 'index'])->name('admin.login_logs.index');
 Route::get('/admin/auditoria-logins', [AuditoriaLoginController::class, 'index'])
     ->name('admin.auditoria-logins');
-    Route::get('/other-settings',  [OtherSettingController::class, 'edit'])->name('other-settings.edit');
+        Route::get('/other-settings',  [OtherSettingController::class, 'edit'])->name('other-settings.edit');
     Route::post('/other-settings', [OtherSettingController::class, 'update'])->name('other-settings.update');
     Route::get('/admin/users/{userId}/documents', [UserDocumentController::class, 'indexForUser'])
         ->name('admin.users.documents.index');
 
+Route::get('/admin/auth-attempts', [AuthAttemptsReportController::class, 'index'])
+    ->name('admin.auth_attempts.index');
+   
 
-    });
+        });

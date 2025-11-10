@@ -16,6 +16,13 @@ return new class extends Migration
             $table->string('rut', 12)->unique();
             $table->string('name');
             $table->string('email')->nullable();
+
+            $table->string('telefono', 30)->nullable();
+            $table->string('grupo_sanguineo', 3)->nullable(); // A+, A-, B+, B-, AB+, AB-, O+, O-
+            $table->char('sexo', 1)->nullable();               // 'M' o 'F'
+            $table->date('fecha_nacimiento')->nullable();
+            $table->text('alergias')->nullable();
+
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->string('lugar_cita')->nullable();
